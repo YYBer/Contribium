@@ -101,6 +101,12 @@ export default function Profile() {
         }
   
         const usernameToFetch = username || currentUser?.username
+        
+        console.log('Profile fetch debug:', {
+          urlUsername: username,
+          currentUserUsername: currentUser?.username,
+          usernameToFetch: usernameToFetch
+        })
   
         if (!usernameToFetch) {
           throw new Error('No username provided')
@@ -112,7 +118,16 @@ export default function Profile() {
           .eq('username', usernameToFetch)
           .single()
   
-        if (userError) throw userError
+        console.log('User lookup result:', {
+          username: usernameToFetch,
+          userData: userData,
+          error: userError
+        })
+  
+        if (userError) {
+          console.error('Supabase error:', userError)
+          throw userError
+        }
   
         if (!userData) {
           throw new Error('User not found')
@@ -139,6 +154,29 @@ export default function Profile() {
     }
   
     fetchProfileData()
+    
+    // Add debug functions to window for testing username lookup
+    (window as any).checkUsername = async (usernameToCheck: string) => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('username, full_name, id')
+        .eq('username', usernameToCheck)
+        .single()
+      
+      console.log('Username check result:', { username: usernameToCheck, data, error })
+      return { data, error }
+    }
+    
+    // Add function to list all usernames
+    (window as any).listAllUsernames = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('username, full_name')
+        .order('username')
+      
+      console.log('All usernames:', data)
+      return { data, error }
+    }
   }, [username, currentUser])
 
   // Add this as a separate useEffect - don't modify your existing one

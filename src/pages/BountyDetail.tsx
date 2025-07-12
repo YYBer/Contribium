@@ -10,6 +10,7 @@ import { useTheme } from "@/contexts/ThemeContext"
 import { useUser } from "@/contexts/UserContext"
 import { supabase } from "@/lib/supabase"
 import { Bounty } from "@/types/supabase"
+import { BountyService } from "@/services/bounty.service"
 import { SubmissionDialog } from '../components/SubmissionDialog'
 import CommentSection from '../components/CommentSection'
 import LoadingPage from "./LoadingPage"
@@ -60,6 +61,11 @@ export default function BountyDetails() {
     }
 
     fetchBounty()
+    
+    // Add debug function to window for testing
+    if (id) {
+      (window as any).debugSubmissionCount = () => BountyService.debugSubmissionCount(id)
+    }
   }, [id])
 
   const handleSubmitOpen = () => {
@@ -82,8 +88,10 @@ export default function BountyDetails() {
     if (!id) return
 
     try {
-      // Add a small delay to ensure submission count update completes
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Add a longer delay to ensure submission count update completes
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      console.log('Refreshing bounty data after submission...')
       
       // Refresh bounty data after submission
       const { data, error } = await supabase
@@ -96,6 +104,10 @@ export default function BountyDetails() {
         .single()
 
       if (error) throw error
+      
+      console.log('Updated bounty data:', data)
+      console.log('Submission count:', data.current_submissions)
+      
       setBounty(data)
       // toast.success("Your submission has been received!")
       toast.success("Your submission has been received!", {

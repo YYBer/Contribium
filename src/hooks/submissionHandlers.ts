@@ -132,7 +132,9 @@ export const handleBountySubmission = async (
     
     // Update submission count using the service method
     try {
+      console.log('About to update submission count for bounty:', bounty.id);
       await BountyService.updateSubmissionCount(bounty.id);
+      console.log('Submission count update completed');
     } catch (e) {
       console.error("Error updating submission count:", e);
       // Don't fail the submission if count update fails
