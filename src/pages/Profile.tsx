@@ -139,7 +139,7 @@ export default function Profile() {
     }
   
     fetchProfileData()
-  }, [username, currentUser, navigate])
+  }, [username, currentUser])
 
   // Add this as a separate useEffect - don't modify your existing one
   useEffect(() => {

@@ -100,9 +100,9 @@ export default function Home() {
         <main>
           {/* Welcome Card */}
           <Card className={`${theme === 'dark' ? 
-            'bg-gradient-to-br from-amber-500/20 to-amber-500/5' : 
-            'bg-gradient-to-br from-amber-100 to-amber-50'} 
-            border-theme-primary mb-6`}>
+            'bg-gradient-to-br from-amber-500/20 to-amber-500/5 border-theme-primary' : 
+            'bg-[#C1A461] border-2 border-[#C1A461]'} 
+            shadow-lg shadow-[#AC8C43]/20 mb-6`}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Avatar className="w-12 h-12 border-2 border-[#c3a95a]">
@@ -121,10 +121,10 @@ export default function Home() {
                   )}
                 </Avatar>
                 <div>
-                  <h1 className={`text-2xl font-bold text-theme-primary font-sentient`}>
+                  <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-theme-primary' : 'text-white'} font-sentient`}>
                     Welcome aboard, Captain {user?.full_name || 'Guest'}
                   </h1>
-                  <p className="text-theme-primary">Your next adventure awaits on $ALPH Bounty Lands</p>
+                  <p className={`${theme === 'dark' ? 'text-theme-primary' : 'text-white/90'}`}>Your next adventure awaits on $ALPH Bounty Lands</p>
                 </div>
               </div>
             </CardContent>
@@ -158,12 +158,12 @@ export default function Home() {
                 </div>
 
                 <Tabs value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as Status)} className="w-full">
-                  <TabsList className="grid w-full max-w-[400px] grid-cols-3 mb-4 bg-gray-800">
+                  <TabsList className={`grid w-full max-w-[400px] grid-cols-3 mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-[#AC8C43]'}`}>
                     {["open", "in review", "completed"].map((tab) => (
                       <TabsTrigger 
                         key={tab}
                         value={tab as Status}
-                        className="data-[state=active]:bg-amber-500 data-[state=active]:text-gray-900"
+                        className={`${theme === 'dark' ? 'data-[state=active]:bg-amber-500 data-[state=active]:text-gray-900' : 'data-[state=active]:bg-[#C1A461] data-[state=active]:text-white text-white/70'}`}
                       >
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                       </TabsTrigger>

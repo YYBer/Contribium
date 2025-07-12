@@ -81,7 +81,7 @@ export const handleBountySubmission = async (
     user_username: userDetails?.username || "",
     user_avatar_url: userDetails?.avatar_url || "",
     user_full_name: userDetails?.full_name || "",
-    user_wallet_address: userDetails?.wallet_address || "",
+    user_wallet_address: userDetails?.wallet_address || null,
     title: title,
     description: description,
     submission_url: submissionUrl,

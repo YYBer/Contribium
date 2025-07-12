@@ -26,7 +26,7 @@ export function Bounties() {
   useEffect(() => {
     const fetchBounties = async () => {
       try {
-        setLoading(false)
+        setLoading(true)
         const { data, error } = await supabase
           .from('bounties')
           .select(`
@@ -119,12 +119,12 @@ export function Bounties() {
             </div>
 
             <Tabs value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as Status)} className="w-full">
-              <TabsList className="grid w-full max-w-[400px] grid-cols-3 mb-4 bg-gray-800">
+              <TabsList className={`grid w-full max-w-[400px] grid-cols-3 mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-[#AC8C43]'}`}>
                 {["open", "in review", "completed"].map((tab) => (
                   <TabsTrigger 
                     key={tab}
                     value={tab as Status}
-                    className="data-[state=active]:bg-amber-500 data-[state=active]:text-gray-900"
+                    className={`${theme === 'dark' ? 'data-[state=active]:bg-amber-500 data-[state=active]:text-gray-900' : 'data-[state=active]:bg-[#C1A461] data-[state=active]:text-white text-white/70'}`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </TabsTrigger>

@@ -117,7 +117,7 @@ const Layout = () => {
           {/* Left side remains the same */}
           <div className="flex items-center gap-8">
             <Link to="/">
-              <img src="/logo_small.jpg" alt="Logo" className="h-10 w-auto" />
+              <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
             </Link>
             <div className="hidden md:flex items-center gap-6">
               {["Bounties", "Projects", "Grants", "Leaderboard"].map((item) => (
