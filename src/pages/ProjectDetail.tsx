@@ -44,7 +44,7 @@ export default function ProjectDetails() {
                 <div>
                   <div className="flex items-center gap-2 text-2xl font-bold">
                     <span className="text-theme-primary">◈</span>
-                    <span className="text-theme-primary">USDC</span>
+                    <span className="text-theme-primary">USD</span>
                   </div>
                   <div className="text-sm text-theme-muted">Payment</div>
                 </div>
@@ -199,7 +199,7 @@ export default function ProjectDetails() {
                 <section>
                   <h2 className="text-lg font-bold text-theme-primary mb-4">Payment Logistics:</h2>
                   <p className="text-theme-secondary">
-                    Monthly : 350-650 USDC
+                    Monthly : 350-650 USD
                   </p>
                 </section>
 

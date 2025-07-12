@@ -60,13 +60,13 @@ const grants = [
   {
     id: 1,
     name: "ALEPHIUM Microgrants Program",
-    amount: "Up to 10k USDC",
+    amount: "Up to 10k USD",
     image: "/placeholder.svg?height=400&width=600",
   },
   {
     id: 2,
     name: " DAO Grants",
-    amount: "Up to 10k USDC",
+    amount: "Up to 10k USD",
     image: "/placeholder.svg?height=400&width=600&text=Jupiter",
   },
   {
@@ -78,38 +78,38 @@ const grants = [
   {
     id: 4,
     name: "Regional Events",
-    amount: "Up to 750 USDC",
+    amount: "Up to 750 USD",
     image: "/placeholder.svg?height=400&width=600&text=Regional",
   }
   // },
   // {
   //   id: 5,
   //   name: "mtnDAO Grants Program",
-  //   amount: "Up to 10k USDC",
+  //   amount: "Up to 10k USD",
   //   image: "/placeholder.svg?height=400&width=600&text=mtnDAO",
   // },
   // {
   //   id: 6,
   //   name: "solBoston Grants Program",
-  //   amount: "Up to 10k USDC",
+  //   amount: "Up to 10k USD",
   //   image: "/placeholder.svg?height=400&width=600&text=solBoston",
   // },
   // {
   //   id: 7,
   //   name: "The PORT Grants Program",
-  //   amount: "Up to 10k USDC",
+  //   amount: "Up to 10k USD",
   //   image: "/placeholder.svg?height=400&width=600&text=PORT",
   // },
   // {
   //   id: 8,
   //   name: "tidalDAO Grants Program",
-  //   amount: "Up to 10k USDC",
+  //   amount: "Up to 10k USD",
   //   image: "/placeholder.svg?height=400&width=600&text=tidalDAO",
   // },
   // {
   //   id: 9,
   //   name: "Vortx Grants Program",
-  //   amount: "Up to 10k USDC",
+  //   amount: "Up to 10k USD",
   //   image: "/placeholder.svg?height=400&width=600&text=Vortx",
   // },
 ]

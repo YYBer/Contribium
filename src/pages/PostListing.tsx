@@ -41,7 +41,7 @@ interface FormData {
 }
 
 const CATEGORIES: Category[] = ['content', 'design', 'development', 'other']
-const TOKENS = ['ALPH', 'USDC']
+const TOKENS = ['ALPH', 'USD']
 
 export function PostListing() {
   const navigate = useNavigate()
@@ -226,7 +226,7 @@ export function PostListing() {
           ...baseData,
           reward: {
             amount: formData.reward?.amount || 0,
-            token: 'USDC',
+            token: 'USD',
             usd_equivalent: usdEquivalent
           },
           start_date: formData.start_date ? new Date(formData.start_date).toISOString() : new Date().toISOString(),
@@ -476,7 +476,7 @@ export function PostListing() {
                       value={formData.reward?.amount || ''}
                       onChange={(e) => handleInputChange('reward', {
                         amount: parseFloat(e.target.value) || 0,
-                        token: 'USDC',
+                        token: 'USD',
                         usd_equivalent: parseFloat(e.target.value) || 0
                       })}
                       placeholder="1000"

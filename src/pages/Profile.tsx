@@ -154,8 +154,10 @@ export default function Profile() {
     }
   
     fetchProfileData()
-    
-    // Add debug functions to window for testing username lookup
+  }, [username, currentUser])
+
+  // Add debug functions to window for testing username lookup
+  useEffect(() => {
     (window as any).checkUsername = async (usernameToCheck: string) => {
       const { data, error } = await supabase
         .from('users')
@@ -177,7 +179,7 @@ export default function Profile() {
       console.log('All usernames:', data)
       return { data, error }
     }
-  }, [username, currentUser])
+  }, [])
 
   // Add this as a separate useEffect - don't modify your existing one
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, Github, Twitter, Linkedin, Globe, MessageCircle, Loader2 } from 'lucide-react'
 import { User } from '../types/supabase'
@@ -193,6 +193,36 @@ export const EditProfile = () => {
     workExperience: user?.work_experience || '0-2',
     location: user?.location || '',
   })
+
+  // Update form data and skills when user data changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || '',
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        bio: user.bio || '',
+        walletAddress: user.wallet_address || '',
+        githubUrl: user.github_url || '',
+        twitterUrl: user.twitter_url || '',
+        linkedinUrl: user.linkedin_url || '',
+        telegramUrl: user.telegram_url || '',
+        websiteUrl: user.website_url || '',
+        currentEmployer: user.current_employer || '',
+        web3Interests: user.web3_interests || [],
+        workExperience: user.work_experience || '0-2',
+        location: user.location || '',
+      })
+      
+      setSelectedSkills({
+        frontend: user.frontend_skills || [],
+        backend: user.backend_skills || [],
+        blockchain: user.blockchain_skills || [],
+        design: user.design_skills || [],
+        content: user.content_skills || []
+      })
+    }
+  }, [user])
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
