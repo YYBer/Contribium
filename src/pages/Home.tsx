@@ -32,6 +32,7 @@ export default function Home() {
   useEffect(() => {
     const fetchBounties = async () => {
       try {
+        console.log('Home: Fetching bounties for status:', selectedStatus)
         setLoading(true)
         const { data, error } = await supabase
           .from('bounties')
@@ -45,6 +46,9 @@ export default function Home() {
 
 
         if (error) throw error
+
+        console.log('Home: Raw bounties data:', data)
+        console.log('Home: Number of bounties found:', data?.length || 0)
 
         const updatedBounties = await Promise.all(data.map(async (bounty) => {
           if (bounty.status !== 'completed' && new Date(bounty.end_date) < new Date()) {
@@ -64,15 +68,19 @@ export default function Home() {
           return bounty
         }))
 
+        console.log('Home: Final bounties to set:', updatedBounties)
         setBounties(updatedBounties)
         } catch (error) {
-          console.error('Error fetching bounties:', error)
+          console.error('Home: Error fetching bounties:', error)
           toast.error('Failed to load bounties')
         } finally {
           setLoading(false)
         }
       }
     fetchBounties()
+    
+    // Add debug function to test bounty fetching
+    (window as any).testBountyFetch = fetchBounties
   }, [selectedStatus])
 
   const getInitials = (name: string | null) => {
