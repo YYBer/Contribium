@@ -112,7 +112,6 @@ export class BountyService {
       .update({ current_submissions: count || 0 })
       .eq('id', bountyId)
       .select()
-      .single()
 
     if (error) throw error
     return data

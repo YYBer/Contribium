@@ -29,7 +29,7 @@ export class LeaderboardService {
           status,
           reward,
           created_at,
-          user:users(*)
+          user:users!user_id(*)
         `)
         .order('created_at', { ascending: false })
 

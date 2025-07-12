@@ -44,6 +44,10 @@ export function SubmissionDialog({
   })
 
   const validateForm = () => {
+    if (!user?.wallet_address || user.wallet_address.trim() === '') {
+      toast.error("You should add your wallet address first in your profile.")
+      return false
+    }
     if (!formData.title.trim()) {
       toast.error("Please enter a title")
       return false
