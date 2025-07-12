@@ -76,20 +76,20 @@ export default function SponsorProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-theme-accent" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-sponsor-primary" />
       </div>
     )
   }
 
   if (!sponsor) {
     return (
-      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-theme-primary">Sponsor not found.</p>
+          <p className="text-sponsor-secondary">Sponsor not found.</p>
           <Button
             onClick={() => navigate('/bounties')}
-            className="btn-theme-primary"
+            className="btn-sponsor-primary"
           >
             Back to Bounties
           </Button>
@@ -99,9 +99,10 @@ export default function SponsorProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary">
-      {/* Header with gradient */}
-      <div className="h-48 bg-gradient-to-r from-amber-500/20 to-amber-500/5 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {/* Hero Header with gradient */}
+      <div className="h-64 gradient-sponsor-hero relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
         {sponsor.logo_url && (
           <div className="absolute inset-0 flex items-center justify-center opacity-10">
             <img 
@@ -111,32 +112,81 @@ export default function SponsorProfile() {
             />
           </div>
         )}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
       </div>
       
-      <div className="max-w-6xl mx-auto px-4 -mt-24">
+      <div className="max-w-6xl mx-auto px-4 -mt-32">
         <div className="space-y-8">
           {/* Profile Header */}
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div className="flex items-end gap-6">
-              <Avatar className="w-32 h-32 border-4 border-theme-primary rounded-full bg-theme-accent">
+              <Avatar className="w-40 h-40 border-6 border-white rounded-full bg-white shadow-2xl">
                 <AvatarImage src={sponsor.logo_url || undefined} />
-                <AvatarFallback className="text-2xl text-theme-primary">
+                <AvatarFallback className="text-3xl text-sponsor-primary bg-sponsor-primary/10">
                   {sponsor.name?.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               
               <div className="mt-4">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold text-theme-primary font-sentient">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-4xl font-bold text-sponsor-secondary font-sentient">
                     {sponsor.name}
                   </h1>
                   {sponsor.is_verified && (
-                    <Badge className="bg-blue-500/20 text-blue-400">Verified</Badge>
+                    <Badge className="badge-sponsor-success text-base px-3 py-1">Verified</Badge>
                   )}
                 </div>
-                <p className="text-theme-muted">
+                <p className="text-gray-600 text-lg mt-2">
                   {sponsor.description || 'A sponsor on the Alephium platform'}
                 </p>
+                
+                {/* Social Links */}
+                <div className="flex flex-wrap gap-3 mt-4">
+                  {sponsor.website_url && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="btn-sponsor-outline-primary"
+                      onClick={() => window.open(sponsor.website_url!, '_blank')}
+                    >
+                      <Globe className="w-4 h-4 mr-2" />
+                      Website
+                    </Button>
+                  )}
+                  {sponsor.twitter_handle && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="btn-sponsor-outline-accent"
+                      onClick={() => window.open(`https://twitter.com/${sponsor.twitter_handle}`, '_blank')}
+                    >
+                      <Twitter className="w-4 h-4 mr-2" />
+                      Twitter
+                    </Button>
+                  )}
+                  {sponsor.github_handle && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="btn-sponsor-outline-primary"
+                      onClick={() => window.open(`https://github.com/${sponsor.github_handle}`, '_blank')}
+                    >
+                      <Github className="w-4 h-4 mr-2" />
+                      GitHub
+                    </Button>
+                  )}
+                  {sponsor.discord_url && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="btn-sponsor-outline-accent"
+                      onClick={() => window.open(sponsor.discord_url!, '_blank')}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Discord
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 {/*             
@@ -190,15 +240,15 @@ export default function SponsorProfile() {
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="card-theme">
+            <Card className="card-sponsor group hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-theme-accent">
-                    <CircleDollarSign className="w-6 h-6 text-theme-primary" />
+                  <div className="w-14 h-14 bg-sponsor-primary rounded-xl flex items-center justify-center group-hover:bg-sponsor-secondary transition-all duration-300">
+                    <CircleDollarSign className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <p className="text-theme-muted">Total Bounties</p>
-                    <h3 className="text-2xl font-bold text-theme-primary">
+                    <p className="text-gray-600 font-medium">Total Bounties</p>
+                    <h3 className="text-3xl font-bold text-sponsor-secondary">
                       {sponsor.total_bounties_count}
                     </h3>
                   </div>
@@ -206,15 +256,15 @@ export default function SponsorProfile() {
               </CardContent>
             </Card>
 
-            <Card className="card-theme">
+            <Card className="card-sponsor group hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-theme-accent">
-                    <BarChart3 className="w-6 h-6 text-theme-primary" />
+                  <div className="w-14 h-14 bg-sponsor-accent rounded-xl flex items-center justify-center group-hover:bg-sponsor-accent/90 transition-all duration-300">
+                    <BarChart3 className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <p className="text-theme-muted">Total Projects</p>
-                    <h3 className="text-2xl font-bold text-theme-primary">
+                    <p className="text-gray-600 font-medium">Total Projects</p>
+                    <h3 className="text-3xl font-bold text-sponsor-secondary">
                       {sponsor.total_projects_count}
                     </h3>
                   </div>
@@ -222,15 +272,15 @@ export default function SponsorProfile() {
               </CardContent>
             </Card>
 
-            <Card className="card-theme">
+            <Card className="card-sponsor group hover:scale-105 transition-all duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-theme-accent">
-                    <CircleDollarSign className="w-6 h-6 text-theme-primary" />
+                  <div className="w-14 h-14 bg-sponsor-secondary rounded-xl flex items-center justify-center group-hover:bg-sponsor-primary transition-all duration-300">
+                    <CircleDollarSign className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <p className="text-theme-muted">Total Rewards</p>
-                    <h3 className="text-2xl font-bold text-theme-primary">
+                    <p className="text-gray-600 font-medium">Total Rewards</p>
+                    <h3 className="text-3xl font-bold text-sponsor-secondary">
                       {formatCurrency(sponsor.total_reward_amount)}
                     </h3>
                   </div>
@@ -241,70 +291,70 @@ export default function SponsorProfile() {
 
           {/* Tabs for Content */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'bounties' | 'about')}>
-            <TabsList className="bg-theme-primary border-b border-theme-secondary w-full justify-start rounded-none p-0 h-auto">
+            <TabsList className="bg-white border-b border-sponsor-primary/20 w-full justify-start rounded-none p-0 h-auto shadow-sm">
               <TabsTrigger
                 value="bounties"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-theme-accent data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-theme-primary px-4 py-2"
+                className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
               >
                 Active Bounties
               </TabsTrigger>
               <TabsTrigger
                 value="about"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-theme-accent data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-theme-primary px-4 py-2"
+                className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
               >
                 About
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="bounties" className="pt-6">
+            <TabsContent value="bounties" className="pt-8">
               {bounties.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-theme-muted">No active bounties at the moment.</p>
+                  <p className="text-gray-600">No active bounties at the moment.</p>
                 </div>
               ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-6">
                   {bounties.map((bounty) => (
                     <Card 
                       key={bounty.id} 
-                      className="card-theme cursor-pointer hover:border-theme-accent transition-colors"
+                      className="card-sponsor cursor-pointer hover:border-sponsor-primary hover:shadow-xl transition-all duration-300"
                       onClick={() => navigate(`/bounty/${bounty.id}`)}
                     >
-                      <CardContent className="p-4">
+                      <CardContent className="p-6">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-lg font-medium text-theme-primary">{bounty.title}</h3>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <Badge variant="outline" className="badge-theme-primary">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-medium text-sponsor-secondary">{bounty.title}</h3>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              <Badge variant="outline" className="badge-sponsor-primary">
                                 {bounty.category}
                               </Badge>
                               {bounty.tags && bounty.tags.slice(0, 3).map((tag, index) => (
-                                <Badge key={index} variant="outline" className="badge-theme-secondary">
+                                <Badge key={index} variant="outline" className="bg-gray-100 text-gray-700 border-gray-200">
                                   {tag}
                                 </Badge>
                               ))}
                             </div>
-                            <p className="mt-3 text-sm text-theme-muted line-clamp-2">
+                            <p className="mt-4 text-gray-600 line-clamp-2">
                               {bounty.description}
                             </p>
-                            <div className="flex items-center gap-4 mt-3 text-sm">
-                              <span className="text-theme-muted">
+                            <div className="flex items-center gap-6 mt-4">
+                              <span className="text-gray-600">
                                 Due in {getTimeRemaining(bounty.end_date)}
                               </span>
-                              <span className="text-theme-muted">
+                              <span className="text-gray-600">
                                 {bounty.current_submissions} submissions
                               </span>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end">
-                            <div className="flex items-center gap-1 text-lg font-bold">
-                              <span className="text-theme-primary">◈</span>
-                              <span className="text-theme-primary">{bounty.reward.amount}</span>
+                          <div className="flex flex-col items-end ml-6">
+                            <div className="flex items-center gap-1 text-2xl font-bold">
+                              <span className="text-sponsor-primary">◈</span>
+                              <span className="text-sponsor-primary">{bounty.reward.amount}</span>
                             </div>
-                            <span className="text-sm text-theme-muted">{bounty.reward.token}</span>
+                            <span className="text-gray-600">{bounty.reward.token}</span>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="mt-4 text-theme-primary hover-theme"
+                              className="mt-4 btn-sponsor-outline-accent"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(`/bounty/${bounty.id}`);
@@ -322,27 +372,27 @@ export default function SponsorProfile() {
               )}
             </TabsContent>
 
-            <TabsContent value="about" className="pt-6">
-              <Card className="card-theme">
-                <CardHeader>
-                  <CardTitle className="text-theme-primary">About {sponsor.name}</CardTitle>
+            <TabsContent value="about" className="pt-8">
+              <Card className="card-sponsor">
+                <CardHeader className="border-b border-sponsor-primary/20">
+                  <CardTitle className="text-sponsor-secondary font-sentient text-2xl">About {sponsor.name}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-8 p-6">
                   {sponsor.description ? (
                     <div>
-                      <h3 className="text-lg font-medium text-theme-primary mb-2">Description</h3>
-                      <p className="text-theme-muted">{sponsor.description}</p>
+                      <h3 className="text-lg font-medium text-sponsor-secondary mb-3">Description</h3>
+                      <p className="text-gray-600 leading-relaxed">{sponsor.description}</p>
                     </div>
                   ) : (
-                    <p className="text-theme-muted">No additional information available about this sponsor.</p>
+                    <p className="text-gray-600">No additional information available about this sponsor.</p>
                   )}
                   
                   <div>
-                    <h3 className="text-lg font-medium text-theme-primary mb-2">Sponsor Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h3 className="text-lg font-medium text-sponsor-secondary mb-4">Sponsor Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <p className="text-theme-primary font-medium">Joined</p>
-                        <p className="text-theme-muted">
+                        <p className="text-sponsor-primary font-medium">Joined</p>
+                        <p className="text-gray-600">
                           {new Date(sponsor.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -351,42 +401,42 @@ export default function SponsorProfile() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-theme-primary font-medium">Status</p>
+                        <p className="text-sponsor-primary font-medium">Status</p>
                         <div className="flex items-center gap-2">
                           <Badge className={sponsor.is_verified ? 
-                            "bg-green-500/20 text-green-400" : 
-                            "bg-yellow-500/20 text-yellow-400"
+                            "badge-sponsor-success" : 
+                            "bg-yellow-500/20 text-yellow-600 border-yellow-500/30"
                           }>
                             {sponsor.is_verified ? 'Verified' : 'Pending Verification'}
                           </Badge>
                         </div>
                       </div>
                       <div>
-                        <p className="text-theme-primary font-medium">Total Bounties</p>
-                        <p className="text-theme-muted">{sponsor.total_bounties_count}</p>
+                        <p className="text-sponsor-primary font-medium">Total Bounties</p>
+                        <p className="text-gray-600">{sponsor.total_bounties_count}</p>
                       </div>
                       <div>
-                        <p className="text-theme-primary font-medium">Total Projects</p>
-                        <p className="text-theme-muted">{sponsor.total_projects_count}</p>
+                        <p className="text-sponsor-primary font-medium">Total Projects</p>
+                        <p className="text-gray-600">{sponsor.total_projects_count}</p>
                       </div>
                       <div>
-                        <p className="text-theme-primary font-medium">Total Reward Amount</p>
-                        <p className="text-theme-muted">{formatCurrency(sponsor.total_reward_amount)}</p>
+                        <p className="text-sponsor-primary font-medium">Total Reward Amount</p>
+                        <p className="text-gray-600">{formatCurrency(sponsor.total_reward_amount)}</p>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-medium text-theme-primary mb-2">Contact & Social</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h3 className="text-lg font-medium text-sponsor-secondary mb-4">Contact & Social</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {sponsor.website_url && (
                         <div>
-                          <p className="text-theme-primary font-medium">Website</p>
+                          <p className="text-sponsor-primary font-medium">Website</p>
                           <a 
                             href={sponsor.website_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-theme-muted hover:text-theme-primary flex items-center gap-1"
+                            className="text-gray-600 hover:text-sponsor-primary flex items-center gap-1 transition-colors"
                           >
                             {sponsor.website_url}
                             <ExternalLink className="w-3 h-3" />
@@ -395,12 +445,12 @@ export default function SponsorProfile() {
                       )}
                       {sponsor.twitter_handle && (
                         <div>
-                          <p className="text-theme-primary font-medium">Twitter</p>
+                          <p className="text-sponsor-primary font-medium">Twitter</p>
                           <a 
                             href={`https://twitter.com/${sponsor.twitter_handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-theme-muted hover:text-theme-primary flex items-center gap-1"
+                            className="text-gray-600 hover:text-sponsor-accent flex items-center gap-1 transition-colors"
                           >
                             @{sponsor.twitter_handle}
                             <ExternalLink className="w-3 h-3" />
@@ -409,12 +459,12 @@ export default function SponsorProfile() {
                       )}
                       {sponsor.github_handle && (
                         <div>
-                          <p className="text-theme-primary font-medium">GitHub</p>
+                          <p className="text-sponsor-primary font-medium">GitHub</p>
                           <a 
                             href={`https://github.com/${sponsor.github_handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-theme-muted hover:text-theme-primary flex items-center gap-1"
+                            className="text-gray-600 hover:text-sponsor-primary flex items-center gap-1 transition-colors"
                           >
                             @{sponsor.github_handle}
                             <ExternalLink className="w-3 h-3" />
@@ -423,12 +473,12 @@ export default function SponsorProfile() {
                       )}
                       {sponsor.discord_url && (
                         <div>
-                          <p className="text-theme-primary font-medium">Discord</p>
+                          <p className="text-sponsor-primary font-medium">Discord</p>
                           <a 
                             href={sponsor.discord_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-theme-muted hover:text-theme-primary flex items-center gap-1"
+                            className="text-gray-600 hover:text-sponsor-accent flex items-center gap-1 transition-colors"
                           >
                             Join Discord
                             <ExternalLink className="w-3 h-3" />

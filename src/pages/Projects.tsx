@@ -6,7 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-export default function Project() {
+export default function Projects() {
   const { theme } = useTheme();
 
   const severityLevels = [
@@ -59,15 +59,15 @@ export default function Project() {
   ];
 
   return (
-    <div className={`min-h-screen bg-theme-primary`}>
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-theme-primary">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="grid gap-12">
           {/* Hero Section */}
-          <section className="pt-12">
-            <h1 className={`text-4xl font-bold mb-6 text-theme-primary font-sentient`}>
+          <section className="pt-4">
+            <h1 className="text-4xl font-bold mb-6 text-theme-primary font-sentient">
               Bug Find
             </h1>
-            <p className={`text-lg mb-8 text-theme-secondary`}>
+            <p className="text-lg mb-8 text-theme-secondary">
               Help secure the Alephium protocol and earn rewards for finding vulnerabilities.
             </p>
           </section>
@@ -142,7 +142,7 @@ export default function Project() {
 
           {/* Rules & Guidelines */}
           <section>
-            <Card className={`${bgColor} ${borderColor}`}>
+            <Card className="card-theme">
               <CardHeader>
                 <CardTitle className="text-theme-primary">Submission Guidelines</CardTitle>
               </CardHeader>

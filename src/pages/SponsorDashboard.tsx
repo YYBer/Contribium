@@ -431,12 +431,12 @@ export default function SponsorDashboard() {
 
   if (!sponsor) {
     return (
-      <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-theme-primary">No sponsor profile found.</p>
+          <p className="text-sponsor-secondary">No sponsor profile found.</p>
           <Button
             onClick={() => navigate('/sponsor')}
-            className="btn-theme-primary"
+            className="btn-sponsor-primary"
           >
             Create Sponsor Profile
           </Button>
@@ -483,34 +483,40 @@ export default function SponsorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-theme-primary p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-theme-primary font-sentient">Sponsor Dashboard</h1>
-            <p className="text-theme-muted">{sponsor.name}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      {/* Hero Header */}
+      <section className="gradient-sponsor-hero text-white py-12 px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold font-sentient">Sponsor Dashboard</h1>
+              <p className="text-xl text-white/90">{sponsor.name}</p>
+              <p className="text-white/70">Manage your bounties, projects, and submissions</p>
+            </div>
+            <Button
+              onClick={() => navigate('/postlisting')}
+              className="bg-white text-sponsor-primary hover:bg-white/90 font-medium px-6 py-3 text-lg shadow-lg"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create New Listing
+            </Button>
           </div>
-          <Button
-            onClick={() => navigate('/postlisting')}
-            className="btn-theme-primary"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Listing
-          </Button>
         </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 -mt-6">
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="card-theme">
+          <Card className="card-sponsor group hover:scale-105 transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-theme-accent">
-                  <CircleDollarSign className="w-6 h-6 text-theme-primary" />
+                <div className="w-14 h-14 bg-sponsor-primary rounded-xl flex items-center justify-center group-hover:bg-sponsor-secondary transition-all duration-300">
+                  <CircleDollarSign className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-theme-muted">Total Bounties</p>
-                  <h3 className="text-2xl font-bold text-theme-primary">
+                  <p className="text-gray-600 font-medium">Total Bounties</p>
+                  <h3 className="text-3xl font-bold text-sponsor-secondary">
                     {sponsor.total_bounties_count}
                   </h3>
                 </div>
@@ -518,15 +524,15 @@ export default function SponsorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-theme">
+          <Card className="card-sponsor group hover:scale-105 transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-theme-accent">
-                  <BarChart3 className="w-6 h-6 text-theme-primary" />
+                <div className="w-14 h-14 bg-sponsor-accent rounded-xl flex items-center justify-center group-hover:bg-sponsor-accent/90 transition-all duration-300">
+                  <BarChart3 className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-theme-muted">Total Projects</p>
-                  <h3 className="text-2xl font-bold text-theme-primary">
+                  <p className="text-gray-600 font-medium">Total Projects</p>
+                  <h3 className="text-3xl font-bold text-sponsor-secondary">
                     {sponsor.total_projects_count}
                   </h3>
                 </div>
@@ -534,15 +540,15 @@ export default function SponsorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="card-theme">
+          <Card className="card-sponsor group hover:scale-105 transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-theme-accent">
-                  <CircleDollarSign className="w-6 h-6 text-theme-primary" />
+                <div className="w-14 h-14 bg-sponsor-secondary rounded-xl flex items-center justify-center group-hover:bg-sponsor-primary transition-all duration-300">
+                  <CircleDollarSign className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-theme-muted">Total Rewards</p>
-                  <h3 className="text-2xl font-bold text-theme-primary">
+                  <p className="text-gray-600 font-medium">Total Rewards</p>
+                  <h3 className="text-3xl font-bold text-sponsor-secondary">
                     ${sponsor.total_reward_amount.toLocaleString()}
                   </h3>
                 </div>
@@ -553,22 +559,22 @@ export default function SponsorDashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-          <TabsList className="bg-theme-primary border-b border-theme-secondary w-full justify-start rounded-none p-0 h-auto">
+          <TabsList className="bg-white border-b border-sponsor-primary/20 w-full justify-start rounded-none p-0 h-auto shadow-sm">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-theme-accent data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-theme-primary px-4 py-2"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="bounties"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-theme-accent data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-theme-primary px-4 py-2"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Bounties
             </TabsTrigger>
             <TabsTrigger
               value="submissions"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-theme-accent data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-theme-primary px-4 py-2"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Submissions
             </TabsTrigger>
@@ -577,36 +583,36 @@ export default function SponsorDashboard() {
           <TabsContent value="overview" className="mt-6">
             <div className="grid md:grid-cols-2 gap-6">
               {/* Recent Bounties */}
-              <Card className="card-theme">
-                <CardHeader>
-                  <CardTitle className="text-theme-primary">Recent Bounties</CardTitle>
+              <Card className="card-sponsor">
+                <CardHeader className="border-b border-sponsor-primary/20">
+                  <CardTitle className="text-sponsor-secondary font-sentient text-xl">Recent Bounties</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {bounties.length === 0 ? (
-                    <p className="text-theme-muted">No bounties found</p>
+                    <p className="text-gray-600">No bounties found</p>
                   ) : (
                     <div className="space-y-4">
                       {bounties.slice(0, 5).map((bounty) => (
                         <div
                           key={bounty.id}
-                          className="p-4 border border-theme-secondary rounded-lg cursor-pointer hover:border-theme-accent transition-colors relative"
+                          className="p-4 border border-sponsor-primary/20 rounded-lg cursor-pointer hover:border-sponsor-primary hover:bg-sponsor-primary/5 transition-all duration-200 relative"
                           onClick={() => handleViewBounty(bounty.id)}
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h3 className="font-medium text-theme-primary">{bounty.title}</h3>
+                              <h3 className="font-medium text-sponsor-secondary">{bounty.title}</h3>
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge 
                                   variant="outline" 
                                   className={
-                                    bounty.status === 'open' ? 'bg-green-500/20 text-green-500' :
-                                    bounty.status === 'in_review' ? 'bg-yellow-500/20 text-yellow-500' :
-                                    'bg-blue-500/20 text-blue-500'
+                                    bounty.status === 'open' ? 'badge-sponsor-success' :
+                                    bounty.status === 'in_review' ? 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30' :
+                                    'badge-sponsor-accent'
                                   }
                                 >
                                   {bounty.status}
                                 </Badge>
-                                <span className="text-sm text-theme-muted">
+                                <span className="text-sm text-gray-600">
                                   {bounty.current_submissions} submissions
                                 </span>
                               </div>
@@ -615,7 +621,7 @@ export default function SponsorDashboard() {
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                className="text-theme-primary hover-theme"
+                                className="text-sponsor-primary hover:bg-sponsor-primary/10"
                                 onClick={(e) => handleEditBounty(bounty.id, e)}
                               >
                                 <Edit className="w-4 h-4" />
@@ -623,7 +629,7 @@ export default function SponsorDashboard() {
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                className="text-theme-primary hover-theme"
+                                className="text-sponsor-accent hover:bg-sponsor-accent/10"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   navigate(`/bounty/${bounty.id}`);
@@ -641,35 +647,35 @@ export default function SponsorDashboard() {
               </Card>
 
               {/* Recent Submissions */}
-              <Card className="card-theme">
-                <CardHeader>
-                  <CardTitle className="text-theme-primary">Recent Submissions</CardTitle>
+              <Card className="card-sponsor">
+                <CardHeader className="border-b border-sponsor-primary/20">
+                  <CardTitle className="text-sponsor-secondary font-sentient text-xl">Recent Submissions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {allSubmissions.length === 0 ? (
-                    <p className="text-theme-muted">No submissions found</p>
+                    <p className="text-gray-600">No submissions found</p>
                   ) : (
                     <div className="space-y-4">
                       {allSubmissions.slice(0, 5).map((submission) => (
                         <div
                           key={submission.id}
-                          className="p-4 border border-theme-secondary rounded-lg cursor-pointer hover:border-theme-accent transition-colors relative"
+                          className="p-4 border border-sponsor-primary/20 rounded-lg cursor-pointer hover:border-sponsor-accent hover:bg-sponsor-accent/5 transition-all duration-200 relative"
                           onClick={() => viewSubmission(submission)}
                         >
                           <div className="flex justify-between items-start">
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
-                              <Avatar className="w-8 h-8">
+                              <Avatar className="w-10 h-10">
                                 <AvatarImage src={submission.user_avatar_url || undefined} />
-                                <AvatarFallback className="bg-theme-accent text-theme-primary">
+                                <AvatarFallback className="bg-sponsor-primary text-white">
                                   {submission.user_username ? getInitials(submission.user_username) : 'AN'}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <h3 className="font-medium text-theme-primary">
+                                <h3 className="font-medium text-sponsor-secondary">
                                   {submission.user_username || 'Anonymous User'}
                                 </h3>
-                                <p className="text-xs text-theme-muted">
+                                <p className="text-sm text-gray-600">
                                   {getBountyTitle(submission.bounty_id)}
                                 </p>
                               </div>
@@ -812,7 +818,7 @@ export default function SponsorDashboard() {
                     {submissions.map((submission) => (
                       <Card 
                         key={submission.id} 
-                        className="card-theme hover:border-theme-accent transition-colors cursor-pointer"
+                        className="card-sponsor hover:border-sponsor-primary hover:shadow-lg transition-all duration-300 cursor-pointer"
                         onClick={() => viewSubmission(submission)}
                       >
                         <CardContent className="p-4">
@@ -909,7 +915,7 @@ export default function SponsorDashboard() {
                     {allSubmissions.map((submission) => (
                       <Card 
                         key={submission.id} 
-                        className="card-theme hover:border-theme-accent transition-colors cursor-pointer"
+                        className="card-sponsor hover:border-sponsor-primary hover:shadow-lg transition-all duration-300 cursor-pointer"
                         onClick={() => viewSubmission(submission)}
                       >
                         <CardContent className="p-4">

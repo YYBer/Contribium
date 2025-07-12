@@ -1,5 +1,314 @@
 /* Theme-based utility classes following Tailwind CSS conventions */
 
+/* New Tetradic Color Scheme */
+/* Primary: #C1A461 (Gold) */
+/* Secondary: #61C174 (Green) */  
+/* Tertiary: #617EC1 (Blue) */
+/* Quaternary: #C161AE (Pink/Purple) */
+
+/* Tetradic Color Scheme Classes */
+/* Background Colors */
+.bg-tetradic-primary {
+  @apply bg-[#C1A461];
+}
+
+.bg-tetradic-secondary {
+  @apply bg-[#61C174];
+}
+
+.bg-tetradic-tertiary {
+  @apply bg-[#617EC1];
+}
+
+.bg-tetradic-quaternary {
+  @apply bg-[#C161AE];
+}
+
+.bg-tetradic-primary-light {
+  @apply bg-[#C1A461]/10;
+}
+
+.bg-tetradic-secondary-light {
+  @apply bg-[#61C174]/10;
+}
+
+.bg-tetradic-tertiary-light {
+  @apply bg-[#617EC1]/10;
+}
+
+.bg-tetradic-quaternary-light {
+  @apply bg-[#C161AE]/10;
+}
+
+/* Text Colors */
+.text-tetradic-primary {
+  @apply text-[#C1A461];
+}
+
+.text-tetradic-secondary {
+  @apply text-[#61C174];
+}
+
+.text-tetradic-tertiary {
+  @apply text-[#617EC1];
+}
+
+.text-tetradic-quaternary {
+  @apply text-[#C161AE];
+}
+
+/* Border Colors */
+.border-tetradic-primary {
+  @apply border-[#C1A461];
+}
+
+.border-tetradic-secondary {
+  @apply border-[#61C174];
+}
+
+.border-tetradic-tertiary {
+  @apply border-[#617EC1];
+}
+
+.border-tetradic-quaternary {
+  @apply border-[#C161AE];
+}
+
+.border-tetradic-primary-light {
+  @apply border-[#C1A461]/20;
+}
+
+.border-tetradic-secondary-light {
+  @apply border-[#61C174]/20;
+}
+
+.border-tetradic-tertiary-light {
+  @apply border-[#617EC1]/20;
+}
+
+.border-tetradic-quaternary-light {
+  @apply border-[#C161AE]/20;
+}
+
+/* Button Variants */
+.btn-tetradic-primary {
+  @apply bg-[#C1A461] hover:bg-[#C1A461]/90 text-white font-medium transition-all duration-200;
+}
+
+.btn-tetradic-secondary {
+  @apply bg-[#61C174] hover:bg-[#61C174]/90 text-white font-medium transition-all duration-200;
+}
+
+.btn-tetradic-tertiary {
+  @apply bg-[#617EC1] hover:bg-[#617EC1]/90 text-white font-medium transition-all duration-200;
+}
+
+.btn-tetradic-quaternary {
+  @apply bg-[#C161AE] hover:bg-[#C161AE]/90 text-white font-medium transition-all duration-200;
+}
+
+.btn-tetradic-outline-primary {
+  @apply border-2 border-[#C1A461] text-[#C1A461] hover:bg-[#C1A461] hover:text-white transition-all duration-200;
+}
+
+.btn-tetradic-outline-secondary {
+  @apply border-2 border-[#61C174] text-[#61C174] hover:bg-[#61C174] hover:text-white transition-all duration-200;
+}
+
+.btn-tetradic-outline-tertiary {
+  @apply border-2 border-[#617EC1] text-[#617EC1] hover:bg-[#617EC1] hover:text-white transition-all duration-200;
+}
+
+.btn-tetradic-outline-quaternary {
+  @apply border-2 border-[#C161AE] text-[#C161AE] hover:bg-[#C161AE] hover:text-white transition-all duration-200;
+}
+
+/* Card Variants */
+.card-tetradic {
+  @apply bg-white border border-[#C1A461]/20 shadow-lg rounded-xl hover:shadow-xl transition-all duration-200;
+}
+
+.card-tetradic-secondary {
+  @apply bg-white border border-[#61C174]/20 shadow-lg rounded-xl hover:shadow-xl transition-all duration-200;
+}
+
+.card-tetradic-tertiary {
+  @apply bg-white border border-[#617EC1]/20 shadow-lg rounded-xl hover:shadow-xl transition-all duration-200;
+}
+
+.card-tetradic-quaternary {
+  @apply bg-white border border-[#C161AE]/20 shadow-lg rounded-xl hover:shadow-xl transition-all duration-200;
+}
+
+/* Badge Variants */
+.badge-tetradic-primary {
+  @apply bg-[#C1A461]/20 text-[#C1A461] border border-[#C1A461]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-tetradic-secondary {
+  @apply bg-[#61C174]/20 text-[#61C174] border border-[#61C174]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-tetradic-tertiary {
+  @apply bg-[#617EC1]/20 text-[#617EC1] border border-[#617EC1]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-tetradic-quaternary {
+  @apply bg-[#C161AE]/20 text-[#C161AE] border border-[#C161AE]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-tetradic-success {
+  @apply bg-[#61C174]/20 text-[#61C174] border border-[#61C174]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+/* Gradient Backgrounds */
+.gradient-tetradic-primary {
+  @apply bg-gradient-to-r from-[#C1A461] to-[#61C174];
+}
+
+.gradient-tetradic-secondary {
+  @apply bg-gradient-to-r from-[#61C174] to-[#617EC1];
+}
+
+.gradient-tetradic-tertiary {
+  @apply bg-gradient-to-r from-[#617EC1] to-[#C161AE];
+}
+
+.gradient-tetradic-quaternary {
+  @apply bg-gradient-to-r from-[#C161AE] to-[#C1A461];
+}
+
+.gradient-tetradic-hero {
+  @apply bg-gradient-to-br from-[#C1A461] via-[#61C174] via-[#617EC1] to-[#C161AE];
+}
+
+.gradient-tetradic-rainbow {
+  @apply bg-gradient-to-r from-[#C1A461] via-[#61C174] via-[#617EC1] to-[#C161AE];
+}
+
+/* Sponsor-specific Background Colors */
+.bg-sponsor-primary {
+  @apply bg-[#C1A461];
+}
+
+.bg-sponsor-secondary {
+  @apply bg-[#AC8C43];
+}
+
+.bg-sponsor-accent {
+  @apply bg-[#617EC1];
+}
+
+.bg-sponsor-primary-light {
+  @apply bg-[#C1A461]/10;
+}
+
+.bg-sponsor-secondary-light {
+  @apply bg-[#AC8C43]/10;
+}
+
+.bg-sponsor-accent-light {
+  @apply bg-[#617EC1]/10;
+}
+
+/* Sponsor-specific Text Colors */
+.text-sponsor-primary {
+  @apply text-[#C1A461];
+}
+
+.text-sponsor-secondary {
+  @apply text-[#AC8C43];
+}
+
+.text-sponsor-accent {
+  @apply text-[#617EC1];
+}
+
+.text-sponsor-white {
+  @apply text-white;
+}
+
+.text-sponsor-dark {
+  @apply text-[#1B2228];
+}
+
+/* Sponsor-specific Border Colors */
+.border-sponsor-primary {
+  @apply border-[#C1A461];
+}
+
+.border-sponsor-secondary {
+  @apply border-[#AC8C43];
+}
+
+.border-sponsor-accent {
+  @apply border-[#617EC1];
+}
+
+.border-sponsor-primary-light {
+  @apply border-[#C1A461]/20;
+}
+
+/* Sponsor-specific Button Variants */
+.btn-sponsor-primary {
+  @apply bg-[#C1A461] hover:bg-[#AC8C43] text-white font-medium transition-all duration-200;
+}
+
+.btn-sponsor-secondary {
+  @apply bg-[#AC8C43] hover:bg-[#C1A461] text-white font-medium transition-all duration-200;
+}
+
+.btn-sponsor-accent {
+  @apply bg-[#617EC1] hover:bg-[#617EC1]/90 text-white font-medium transition-all duration-200;
+}
+
+.btn-sponsor-outline-primary {
+  @apply border-2 border-[#C1A461] text-[#C1A461] hover:bg-[#C1A461] hover:text-white transition-all duration-200;
+}
+
+.btn-sponsor-outline-accent {
+  @apply border-2 border-[#617EC1] text-[#617EC1] hover:bg-[#617EC1] hover:text-white transition-all duration-200;
+}
+
+/* Sponsor-specific Card Variants */
+.card-sponsor {
+  @apply bg-white border border-[#C1A461]/20 shadow-lg rounded-xl hover:shadow-xl transition-all duration-200;
+}
+
+.card-sponsor-dark {
+  @apply bg-[#1B2228] border border-[#C1A461]/30 shadow-lg rounded-xl hover:shadow-xl transition-all duration-200;
+}
+
+.card-sponsor-accent {
+  @apply bg-gradient-to-br from-[#617EC1]/5 to-[#C1A461]/5 border border-[#617EC1]/20 shadow-lg rounded-xl;
+}
+
+/* Sponsor-specific Badge Variants */
+.badge-sponsor-primary {
+  @apply bg-[#C1A461]/20 text-[#C1A461] border border-[#C1A461]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-sponsor-accent {
+  @apply bg-[#617EC1]/20 text-[#617EC1] border border-[#617EC1]/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-sponsor-success {
+  @apply bg-green-500/20 text-green-600 border border-green-500/30 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+/* Sponsor-specific Gradient Backgrounds */
+.gradient-sponsor-primary {
+  @apply bg-gradient-to-r from-[#C1A461] to-[#AC8C43];
+}
+
+.gradient-sponsor-accent {
+  @apply bg-gradient-to-r from-[#617EC1] to-[#C1A461];
+}
+
+.gradient-sponsor-hero {
+  @apply bg-gradient-to-br from-[#C1A461] via-[#AC8C43] to-[#617EC1];
+}
+
 /* Background Colors */
 .bg-theme-primary {
   @apply bg-white dark:bg-[#1B2228];
