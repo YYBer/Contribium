@@ -82,6 +82,9 @@ export default function BountyDetails() {
     if (!id) return
 
     try {
+      // Add a small delay to ensure submission count update completes
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       // Refresh bounty data after submission
       const { data, error } = await supabase
         .from('bounties')

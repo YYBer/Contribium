@@ -229,6 +229,34 @@ export default function Profile() {
               </div>
             </div>
 
+              {/* Wallet Address */}
+              {profileUser.wallet_address && (
+                <Card className={`card-theme-secondary mb-6`}>
+                  <CardContent className="p-6">
+                    <h2 className={`text-lg font-bold text-theme-primary mb-4`}>Alph Wallet Address</h2>
+                    <div className="flex items-center gap-3 p-3 bg-theme-accent rounded-lg border">
+                      <code className="flex-1 text-sm font-mono text-theme-primary break-all">
+                        {profileUser.wallet_address}
+                      </code>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-shrink-0 h-8 w-8 p-0"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(profileUser.wallet_address || '')
+                            toast.success("Wallet address copied to clipboard!")
+                          } catch (err) {
+                            toast.error("Failed to copy wallet address")
+                          }
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Details and Skills */}
               <div className="grid md:grid-cols-2 gap-6">

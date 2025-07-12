@@ -29,7 +29,7 @@ export class LeaderboardService {
           status,
           reward,
           created_at,
-          user:users!user_id(*)
+          user:users!bounty_submissions_user_username_fkey(*)
         `)
         .order('created_at', { ascending: false })
 

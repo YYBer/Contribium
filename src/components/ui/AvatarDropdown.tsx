@@ -45,8 +45,8 @@ export function AvatarDropdown({ user, getInitials }: AvatarDropdownProps) {
     if (user.username) {
       navigate(`/profile/${user.username}`)
     } else {
-      // Fallback to profile route if username is not available
-      navigate('/profile')
+      // If username not available, navigate to edit profile to set it up
+      navigate('/editprofile')
     }
   }
 

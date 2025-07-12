@@ -149,13 +149,6 @@ export class UserService {
 
   static async updateProfile(userId: string, updates: Partial<User>): Promise<User | null> {
     try {
-      if (updates.wallet_address) {
-        const isAvailable = await this.isWalletAddressAvailable(updates.wallet_address, userId)
-        if (!isAvailable) {
-          throw new Error('Wallet address is already registered')
-        }
-      }
-      
       const { data, error } = await supabase
         .from('users')
         .update(updates)
