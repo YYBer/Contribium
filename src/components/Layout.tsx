@@ -9,6 +9,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { AvatarDropdown } from './ui/AvatarDropdown'
 import { SessionProvider } from "../contexts/SessionContext";
 import { ThemeToggle } from './ThemeToggle'
+import NotificationDropdown from './NotificationDropdown'
 import { useRewards } from '../hooks/useRewards'
 import { supabase } from '../lib/supabase'
 import { Sponsor } from '../types/supabase'
@@ -139,6 +140,7 @@ const Layout = () => {
             
             {user ? (
               <div className="flex items-center gap-4">
+                <NotificationDropdown user={user} theme={theme} />
                 <Button 
                   className="btn-theme-primary"
                   onClick={handleSponsorClick}

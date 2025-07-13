@@ -74,6 +74,21 @@ export interface CommentLike {
   created_at: string
 }
 
+export type NotificationType = 'submission_accepted' | 'submission_rejected' | 'bounty_completed' | 'comment_reply' | 'general'
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message: string
+  related_bounty_id: string | null
+  related_submission_id: string | null
+  is_read: boolean
+  created_at: string
+  read_at: string | null
+}
+
 // Bounty interface with sponsor relationship and improved tracking
 export interface Bounty {
   id: string
@@ -185,6 +200,11 @@ export interface Database {
         Row: CommentLike
         Insert: Omit<CommentLike, 'id' | 'created_at'>
         Update: Partial<Omit<CommentLike, 'id' | 'created_at'>>
+      }
+      notifications: {
+        Row: Notification
+        Insert: Omit<Notification, 'id' | 'created_at' | 'read_at'>
+        Update: Partial<Omit<Notification, 'id' | 'created_at'>>
       }
       bounty_submissions: {
         Row: BountySubmission
