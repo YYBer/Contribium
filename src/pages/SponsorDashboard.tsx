@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { CircleDollarSign, Plus, BarChart3, Edit, ExternalLink, ArrowLeft, Eye, CheckCircle, XCircle, Copy, Check } from 'lucide-react'
+import { CircleDollarSign, Plus, BarChart3, Edit, ExternalLink, ArrowLeft, Eye, CheckCircle, XCircle, Copy, Check, Upload } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useUser } from '@/contexts/UserContext'
 import { supabase } from '@/lib/supabase'
@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SponsorSubmissionDialog } from '../components/SponsorSubmissionDialog'
+import { ProfilePictureManager } from '../components/ProfilePictureManager'
 
 export default function SponsorDashboard() {
   const navigate = useNavigate()
@@ -43,6 +44,7 @@ export default function SponsorDashboard() {
   const [showSubmissionDetails, setShowSubmissionDetails] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [transactionHash, setTransactionHash] = useState('')
+  const [showProfileManager, setShowProfileManager] = useState(false)
   // const [showWalletCopied, setShowWalletCopied] = useState(false)
   // const [rewardAmount, setRewardAmount] = useState<string>(
     // selectedSubmission?.reward?.amount?.toString() || ""
@@ -278,6 +280,20 @@ export default function SponsorDashboard() {
     navigate(`/bounty/${bountyId}`)
   }
 
+  // Handle sponsor profile updates
+  const handleProfileUpdate = (updatedData: Partial<typeof sponsor>) => {
+    if (sponsor) {
+      console.log('handleProfileUpdate - Current sponsor:', sponsor)
+      console.log('handleProfileUpdate - Update data:', updatedData)
+      const newSponsor = {
+        ...sponsor,
+        ...updatedData
+      }
+      console.log('handleProfileUpdate - New sponsor state:', newSponsor)
+      setSponsor(newSponsor)
+    }
+  }
+
   // Get bounty title by ID
   const getBountyTitle = (bountyId: string) => {
     // First check in our loaded bounties
@@ -485,7 +501,7 @@ export default function SponsorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Hero Header */}
       <section className="gradient-sponsor-hero text-white py-12 px-8">
         <div className="max-w-7xl mx-auto">
@@ -497,7 +513,7 @@ export default function SponsorDashboard() {
             </div>
             <Button
               onClick={() => navigate('/postlisting')}
-              className="bg-white text-sponsor-primary hover:bg-white/90 font-medium px-6 py-3 text-lg shadow-lg"
+              className="bg-white dark:bg-gray-800 text-sponsor-primary dark:text-white hover:bg-white/90 dark:hover:bg-gray-700 font-medium px-6 py-3 text-lg shadow-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               Create New Listing
@@ -517,7 +533,7 @@ export default function SponsorDashboard() {
                   <CircleDollarSign className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-600 font-medium">Total Bounties</p>
+                  <p className="text-gray-600 dark:text-gray-300 font-medium">Total Bounties</p>
                   <h3 className="text-3xl font-bold text-sponsor-secondary">
                     {sponsor.total_bounties_count}
                   </h3>
@@ -533,7 +549,7 @@ export default function SponsorDashboard() {
                   <BarChart3 className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-600 font-medium">Total Projects</p>
+                  <p className="text-gray-600 dark:text-gray-300 font-medium">Total Projects</p>
                   <h3 className="text-3xl font-bold text-sponsor-secondary">
                     {sponsor.total_projects_count}
                   </h3>
@@ -549,7 +565,7 @@ export default function SponsorDashboard() {
                   <CircleDollarSign className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-600 font-medium">Total Rewards</p>
+                  <p className="text-gray-600 dark:text-gray-300 font-medium">Total Rewards</p>
                   <h3 className="text-3xl font-bold text-sponsor-secondary">
                     ${sponsor.total_reward_amount.toLocaleString()}
                   </h3>
@@ -561,28 +577,82 @@ export default function SponsorDashboard() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-          <TabsList className="bg-white border-b border-sponsor-primary/20 w-full justify-start rounded-none p-0 h-auto shadow-sm">
+          <TabsList className="bg-white dark:bg-gray-800 border-b border-sponsor-primary/20 dark:border-gray-600 w-full justify-start rounded-none p-0 h-auto shadow-sm">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 dark:text-gray-300 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="bounties"
-              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 dark:text-gray-300 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Bounties
             </TabsTrigger>
             <TabsTrigger
               value="submissions"
-              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 dark:text-gray-300 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Submissions
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
+            {/* Profile Management */}
+            <Card className="card-sponsor mb-6">
+              <CardHeader className="border-b border-sponsor-primary/20">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-sponsor-secondary font-sentient text-xl">Profile Information</CardTitle>
+                  <Button
+                    onClick={() => setShowProfileManager(true)}
+                    size="sm"
+                    variant="outline"
+                    className="border-sponsor-primary text-sponsor-primary hover:bg-sponsor-primary hover:text-white"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit Profile
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Description</h4>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{sponsor.description || 'No description provided'}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Website</h4>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                      {sponsor.website_url ? (
+                        <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer" className="text-sponsor-primary hover:underline">
+                          {sponsor.website_url}
+                        </a>
+                      ) : (
+                        'No website provided'
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Twitter</h4>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                      {sponsor.twitter_handle ? (
+                        <a href={`https://twitter.com/${sponsor.twitter_handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-sponsor-primary hover:underline">
+                          {sponsor.twitter_handle}
+                        </a>
+                      ) : (
+                        'No Twitter handle provided'
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Profile Picture</h4>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{sponsor.profile_photos?.length ? 'Uploaded' : 'Not uploaded'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Sponsor Profile Photos */}
             {sponsor.profile_photos && sponsor.profile_photos.length > 0 && (
               <Card className="card-sponsor mb-6">
@@ -626,7 +696,7 @@ export default function SponsorDashboard() {
                 </CardHeader>
                 <CardContent>
                   {bounties.length === 0 ? (
-                    <p className="text-gray-600">No bounties found</p>
+                    <p className="text-gray-600 dark:text-gray-300">No bounties found</p>
                   ) : (
                     <div className="space-y-4">
                       {bounties.slice(0, 5).map((bounty) => (
@@ -648,7 +718,7 @@ export default function SponsorDashboard() {
                                 >
                                   {bounty.status}
                                 </Badge>
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-gray-600 dark:text-gray-300">
                                   {bounty.current_submissions} submissions
                                 </span>
                               </div>
@@ -689,7 +759,7 @@ export default function SponsorDashboard() {
                 </CardHeader>
                 <CardContent>
                   {allSubmissions.length === 0 ? (
-                    <p className="text-gray-600">No submissions found</p>
+                    <p className="text-gray-600 dark:text-gray-300">No submissions found</p>
                   ) : (
                     <div className="space-y-4">
                       {allSubmissions.slice(0, 5).map((submission) => (
@@ -711,7 +781,7 @@ export default function SponsorDashboard() {
                                 <h3 className="font-medium text-sponsor-secondary">
                                   {submission.user_username || 'Anonymous User'}
                                 </h3>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
                                   {getBountyTitle(submission.bounty_id)}
                                 </p>
                               </div>
@@ -1027,6 +1097,21 @@ export default function SponsorDashboard() {
         onStatusUpdate={handleStatusUpdate}
         onRefresh={refreshSubmissions}
       />
+
+      {/* Profile Management Dialog */}
+      <Dialog open={showProfileManager} onOpenChange={setShowProfileManager}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
+          {sponsor && (
+            <ProfilePictureManager
+              sponsor={sponsor}
+              onUpdate={handleProfileUpdate}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

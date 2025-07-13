@@ -250,61 +250,108 @@ export default function BountyDetails() {
               </CardContent>
             </Card>
 
-            {/* Sponsor Photos */}
-            {bounty.sponsor?.profile_photos && bounty.sponsor.profile_photos.length > 0 && (
-              <Card className={`bg-theme-primary border-theme-primary`}>
-                <CardContent className="p-4">
-                  <h3 className={`font-bold text-theme-primary mb-3`}>SPONSOR GALLERY</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {bounty.sponsor.profile_photos.slice(0, 4).map((photo, index) => (
-                      <img
-                        key={index}
-                        src={photo}
-                        alt={`${bounty.sponsor?.name} photo ${index + 1}`}
-                        className="w-full h-20 object-cover rounded-lg border border-theme-secondary"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                    ))}
-                  </div>
-                  {bounty.sponsor.profile_photos.length > 4 && (
-                    <p className="text-xs text-theme-muted mt-2 text-center">
-                      +{bounty.sponsor.profile_photos.length - 4} more photos
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </aside>
 
           {/* Main Content */}
           <div className="space-y-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className={`text-2xl font-bold text-theme-primary mb-2 font-sentient`}>
-                  {bounty.title}
-                </h1>
-                <div className={`flex items-center gap-4 text-theme-muted`}>
-                  {bounty.sponsor && bounty.sponsor.id ? (
-                    <Link to={`/sponsor/${bounty.sponsor.id}`}>
-                      <span className="hover:underline transition-all">
-                        by {bounty.sponsor.name || 'Unknown Sponsor'}
-                      </span>
-                    </Link>
-                  ) : (
-                    <span>by Unknown Sponsor</span>
-                  )}
-                  <Badge variant="secondary" className="bg-[#C1A461]/20 text-[#C1A461]">
-                    {bounty.category}
-                  </Badge>
-                  <div className="flex items-center gap-1">
-                    <Globe className="w-4 h-4" />
-                    <span>Global</span>
+            <div className="flex items-center">
+              {bounty.sponsor ? (
+                <img 
+                  className="mr-2 h-12 w-12 rounded-md object-cover md:h-16 md:w-16" 
+                  alt={bounty.sponsor.name || 'Sponsor'} 
+                  src={
+                    (bounty.sponsor.profile_photos && bounty.sponsor.profile_photos.length > 0 
+                      ? bounty.sponsor.profile_photos[0] 
+                      : bounty.sponsor.logo_url || `https://via.placeholder.com/64?text=${bounty.sponsor.name?.charAt(0) || 'S'}`
+                    )
+                  }
+                  onError={(e) => {
+                    e.currentTarget.src = `https://via.placeholder.com/64?text=${bounty.sponsor?.name?.charAt(0) || 'S'}`
+                  }}
+                />
+              ) : (
+                <div className="mr-2 h-12 w-12 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center md:h-16 md:w-16">
+                  <span className="text-gray-500 font-semibold">S</span>
+                </div>
+              )}
+              <div className="flex flex-col items-start gap-1">
+                <div className="flex gap-1">
+                  <div className="flex md:hidden">
+                    <h1 className="text-lg font-semibold tracking-tight text-slate-700 dark:text-slate-300">
+                      {bounty.title}
+                    </h1>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>{bounty.current_submissions}</span>
+                  <div className="hidden md:flex">
+                    <h1 className="text-lg font-semibold tracking-tight text-slate-700 dark:text-slate-300 sm:text-xl">
+                      {bounty.title}
+                    </h1>
+                  </div>
+                </div>
+                <div className="flex md:hidden">
+                  <div className="flex items-center gap-2">
+                    {bounty.sponsor && bounty.sponsor.id ? (
+                      <Link to={`/sponsor/${bounty.sponsor.id}`}>
+                        <p className="text-sm font-medium text-slate-500 hover:underline">
+                          by {bounty.sponsor.name || 'Unknown Sponsor'}
+                        </p>
+                      </Link>
+                    ) : (
+                      <p className="text-sm font-medium text-slate-500">
+                        by Unknown Sponsor
+                      </p>
+                    )}
+                    <span className="text-slate-400">•</span>
+                    <p className="text-sm text-slate-400">{bounty.current_submissions} submissions</p>
+                  </div>
+                </div>
+                <div className="hidden md:flex">
+                  <div className="flex flex-wrap items-center gap-1 md:gap-2">
+                    <div className="flex items-center gap-1">
+                      {bounty.sponsor && bounty.sponsor.id ? (
+                        <Link to={`/sponsor/${bounty.sponsor.id}`}>
+                          <p className="max-w-[200px] overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap text-slate-500 hover:underline">
+                            by {bounty.sponsor.name || 'Unknown Sponsor'}
+                          </p>
+                        </Link>
+                      ) : (
+                        <p className="max-w-[200px] overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap text-slate-500">
+                          by Unknown Sponsor
+                        </p>
+                      )}
+                    </div>
+                    <span className="font-medium text-[#E2E8EF]">|</span>
+                    <div className="flex">
+                      <div className="flex items-center gap-1">
+                        <svg className="size-3 fill-slate-400" viewBox="0 0 8 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M3.57848 9.37923C3.57848 9.91177 4.26916 10.1209 4.56456 9.67779L7.80495 4.81721C8.04341 4.45952 7.787 3.98041 7.35711 3.98041H4.77457V0.973754C4.77457 0.441218 4.08389 0.232096 3.78849 0.675193L0.548099 5.53578C0.30964 5.89347 0.566053 6.37258 0.99594 6.37258H3.57848V9.37923Z" />
+                        </svg>
+                        <p className="text-sm font-medium text-gray-400">Bounty</p>
+                      </div>
+                    </div>
+                    <span className="font-medium text-[#E2E8EF] hidden sm:flex">|</span>
+                    <div className="hidden sm:flex">
+                      <div className="flex items-center gap-1 rounded-full py-1 text-xs font-medium whitespace-nowrap sm:gap-2 sm:text-sm text-green-600">
+                        <div className="relative flex items-center justify-center">
+                          <div className="flex items-center justify-center rounded-full" style={{width: '3px', height: '3px', backgroundColor: 'rgb(154, 230, 180)', opacity: 0.8, animation: '1250ms ease 0s infinite normal none running pulse'}}></div>
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full p-1" style={{backgroundColor: 'rgb(22, 163, 74)'}}></div>
+                        </div>
+                        <p className="hidden sm:flex">
+                          {bounty.status === 'open' ? 'Submissions Open' : 'Submissions Closed'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-medium text-[#E2E8EF]">|</span>
+                    <div className="flex items-center gap-0.5">
+                      <Globe className="h-4 w-4 text-slate-400" />
+                      <span className="rounded-full text-sm font-medium whitespace-nowrap text-slate-400">Global</span>
+                    </div>
+                    <span className="font-medium text-[#E2E8EF] hidden sm:flex">|</span>
+                    <div className="hidden md:block">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 fill-slate-600 text-slate-500" />
+                        <p className="text-sm text-slate-400">{bounty.current_submissions}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

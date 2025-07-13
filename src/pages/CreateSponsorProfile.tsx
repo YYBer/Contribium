@@ -156,39 +156,90 @@ export function CreateSponsorProfile() {
   }
 
   const uploadPhotos = async (): Promise<string[]> => {
-    if (photoFiles.length === 0) return []
+    if (photoFiles.length === 0) {
+      console.log('No photos to upload, skipping photo upload')
+      return []
+    }
+    
+    console.log(`Starting upload of ${photoFiles.length} photos`)
     
     try {
-      const uploadPromises = photoFiles.map(async (photoFile) => {
+      // Check if storage bucket exists
+      console.log('Checking storage bucket access...')
+      const { data: buckets, error: bucketError } = await supabase.storage.listBuckets()
+      console.log('Available storage buckets:', buckets?.map(b => b.name))
+      
+      if (bucketError) {
+        console.error('Error checking storage buckets:', bucketError)
+        throw new Error(`Storage access denied: ${bucketError.message}`)
+      }
+      
+      const sponsorBucket = buckets?.find(b => b.name === 'sponsor-photos')
+      if (!sponsorBucket) {
+        console.error('sponsor-photos bucket not found!')
+        throw new Error('sponsor-photos bucket does not exist')
+      }
+      console.log('sponsor-photos bucket found successfully')
+      
+      const uploadPromises = photoFiles.map(async (photoFile, index) => {
+        console.log(`Starting upload ${index + 1}/${photoFiles.length}: ${photoFile.file.name}`)
+        console.log(`File size: ${(photoFile.file.size / 1024 / 1024).toFixed(2)}MB`)
+        console.log(`File type: ${photoFile.file.type}`)
+        
         const fileExt = photoFile.file.name.split('.').pop()?.toLowerCase() || 'jpg'
         const fileName = `sponsor-${user?.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+        console.log(`Generated filename: ${fileName}`)
         
-        const { data, error: uploadError } = await supabase.storage
-          .from('sponsor-photos')
-          .upload(fileName, photoFile.file, {
-            contentType: photoFile.file.type,
-            upsert: true
-          })
+        try {
+          console.log(`Calling supabase.storage.upload for photo ${index + 1}...`)
           
-        if (uploadError) {
-          console.error('Upload error:', uploadError)
-          throw uploadError
-        }
+          // Add timeout to individual uploads
+          const uploadPromise = supabase.storage
+            .from('sponsor-photos')
+            .upload(fileName, photoFile.file, {
+              contentType: photoFile.file.type,
+              upsert: true
+            })
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => {
+              console.log(`Upload timeout reached for ${photoFile.file.name}`)
+              reject(new Error(`Upload timeout for ${photoFile.file.name}`))
+            }, 30000)
+          )
+          
+          console.log(`Waiting for upload to complete for photo ${index + 1}...`)
+          const { data, error: uploadError } = await Promise.race([uploadPromise, timeoutPromise]) as any
+          
+          if (uploadError) {
+            console.error(`Upload error for ${photoFile.file.name}:`, uploadError)
+            console.error('Upload error details:', JSON.stringify(uploadError, null, 2))
+            throw uploadError
+          }
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('sponsor-photos')
-          .getPublicUrl(fileName)
-        
-        return publicUrl
+          console.log(`Upload successful for photo ${index + 1}, getting public URL...`)
+          
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('sponsor-photos')
+            .getPublicUrl(fileName)
+          
+          console.log(`Successfully uploaded photo ${index + 1}: ${publicUrl}`)
+          return publicUrl
+          
+        } catch (error) {
+          console.error(`Failed to upload photo ${index + 1}:`, error)
+          throw error
+        }
       })
 
       const photoUrls = await Promise.all(uploadPromises)
+      console.log(`All ${photoUrls.length} photos uploaded successfully`)
       return photoUrls
       
     } catch (error) {
       console.error('Error uploading photos:', error)
-      toast.error('Failed to upload photos. Please try again.')
+      toast.error(`Failed to upload photos: ${error.message || 'Unknown error'}`)
       throw error
     }
   } 
@@ -211,13 +262,31 @@ export function CreateSponsorProfile() {
       
       // Upload photos first
       let profilePhotos: string[] = []
-      try {
-        profilePhotos = await uploadPhotos()
-      } catch (photoError) {
-        console.error('Photo upload failed:', photoError)
-        // Continue without photos, don't fail the entire process
-        toast.error('Photo upload failed, but profile will be created without photos')
+      console.log("Step 1: Starting photo upload process...")
+      
+      // TEMPORARY: Skip all photo uploads to test if this is the hanging issue
+      console.log("Step 1: TEMPORARILY SKIPPING PHOTO UPLOADS FOR TESTING")
+      profilePhotos = []
+      
+      // Uncomment this block after storage bucket is properly set up:
+      /*
+      if (photoFiles.length === 0) {
+        console.log("Step 1: No photos selected, skipping upload")
+        profilePhotos = []
+      } else {
+        try {
+          console.log(`Step 1: Attempting to upload ${photoFiles.length} photos...`)
+          profilePhotos = await uploadPhotos()
+          console.log("Step 1: Photo upload completed successfully")
+        } catch (photoError) {
+          console.error('Photo upload failed:', photoError)
+          // Continue without photos, don't fail the entire process
+          toast.error('Photo upload failed, but profile will be created without photos')
+          console.log("Step 1: Continuing without photos")
+          profilePhotos = [] // Ensure it's empty array
+        }
       }
+      */
       
       const sponsorData = {
         user_id: user.id,
@@ -230,15 +299,21 @@ export function CreateSponsorProfile() {
         is_verified: false,
         total_bounties_count: 0,
         total_projects_count: 0,
-        total_reward_amount: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        total_reward_amount: 0
+        // created_at and updated_at will be set automatically by the database
       }
+      
+      console.log("Step 2: Preparing sponsor data...")
+      console.log("Sponsor data to be sent:", { ...sponsorData, user_id: '[HIDDEN]' })
       
       // Create a controller for timeout handling
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      const timeoutId = setTimeout(() => {
+        console.log("Step 2: Request timeout after 10 seconds")
+        controller.abort()
+      }, 10000)
       
+      console.log("Step 2: Sending API request to create sponsor...")
       // Direct fetch request to Supabase 
       const response = await fetch(`${supabaseUrl}/rest/v1/sponsors`, {
         method: 'POST',
@@ -251,6 +326,8 @@ export function CreateSponsorProfile() {
         body: JSON.stringify(sponsorData),
         signal: controller.signal
       })
+      
+      console.log("Step 2: Received response with status:", response.status)
       
       clearTimeout(timeoutId)
       

@@ -211,7 +211,7 @@ const Layout = () => {
                     {
                       icon: "🏴‍☠️",
                       title: "Join the Crew",
-                      description: "Create your sailor's profile"
+                      description: "Create your sailor's profile and save your wallet address"
                     },
                     {
                       icon: "⚓",

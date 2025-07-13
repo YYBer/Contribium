@@ -21,17 +21,22 @@ import { Category, Bounty } from "@/types/supabase"
 
 interface FormData {
   title: string
-  description: string
+  description: string | null
   category: Category
-  company: {
-    name: string
-    logo: string
-  }
+  requirements: string | null
   reward: {
     amount: number
     token: string
+    usd_equivalent: number
   }
-  due_date: string
+  submission_guidelines: string | null
+  max_submissions: number
+  start_date: string
+  end_date: string
+  review_timeframe: number
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced'
+  estimated_hours: number | null
+  tags: string[]
   status: 'open' | 'completed'
 }
 
@@ -39,15 +44,20 @@ const INITIAL_FORM_DATA: FormData = {
   title: "",
   description: "",
   category: 'development',
-  company: {
-    name: "Alephium",
-    logo: ""
-  },
+  requirements: "",
   reward: {
     amount: 0,
-    token: "USD"
+    token: "USD",
+    usd_equivalent: 0
   },
-  due_date: "",
+  submission_guidelines: "",
+  max_submissions: 10,
+  start_date: new Date().toISOString().split('T')[0],
+  end_date: "",
+  review_timeframe: 7,
+  difficulty_level: 'intermediate',
+  estimated_hours: null,
+  tags: [],
   status: 'open'
 }
 
@@ -76,12 +86,33 @@ export default function EditBounty() {
 
         if (error) throw error
         if (data) {
-          setFormData(data)
+          console.log('Fetched bounty data:', data)
+          // Map database fields to form structure
+          setFormData({
+            title: data.title || '',
+            description: data.description || '',
+            category: data.category || 'development',
+            requirements: data.requirements || '',
+            reward: {
+              amount: data.reward?.amount || 0,
+              token: data.reward?.token || 'USD',
+              usd_equivalent: data.reward?.usd_equivalent || data.reward?.amount || 0
+            },
+            submission_guidelines: data.submission_guidelines || '',
+            max_submissions: data.max_submissions || 10,
+            start_date: data.start_date ? data.start_date.split('T')[0] : new Date().toISOString().split('T')[0],
+            end_date: data.end_date ? data.end_date.split('T')[0] : '',
+            review_timeframe: data.review_timeframe || 7,
+            difficulty_level: data.difficulty_level || 'intermediate',
+            estimated_hours: data.estimated_hours || null,
+            tags: data.tags || [],
+            status: data.status || 'open'
+          })
         }
       } catch (error) {
         console.error('Error fetching bounty:', error)
         toast.error("Failed to load bounty details")
-        navigate('/bounties')
+        navigate('/sponsor/dashboard')
       } finally {
         setInitialLoading(false)
       }
@@ -90,34 +121,84 @@ export default function EditBounty() {
     fetchBounty()
   }, [id])
 
-  // Check if user is authorized
+  // Check if user is authorized to edit this bounty
   useEffect(() => {
-    if (!user?.email?.endsWith('@alephium.org')) {
-      toast.error("Unauthorized access")
-      navigate('/bounties')
+    const checkAuthorization = async () => {
+      if (!user?.id || !id) return
+
+      try {
+        // Get the bounty and check if the current user is the sponsor
+        const { data: bounty, error: bountyError } = await supabase
+          .from('bounties')
+          .select('sponsor_id')
+          .eq('id', id)
+          .single()
+
+        if (bountyError) {
+          console.error('Error checking bounty ownership:', bountyError)
+          toast.error("Failed to verify bounty ownership")
+          navigate('/sponsor/dashboard')
+          return
+        }
+
+        // Get the sponsor profile for this user
+        const { data: sponsor, error: sponsorError } = await supabase
+          .from('sponsors')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+
+        if (sponsorError) {
+          console.error('Error checking sponsor profile:', sponsorError)
+          toast.error("You must be a sponsor to edit bounties")
+          navigate('/sponsor/dashboard')
+          return
+        }
+
+        // Check if this sponsor owns the bounty
+        if (bounty.sponsor_id !== sponsor.id) {
+          toast.error("You can only edit your own bounties")
+          navigate('/sponsor/dashboard')
+          return
+        }
+      } catch (error) {
+        console.error('Authorization check failed:', error)
+        toast.error("Authorization check failed")
+        navigate('/sponsor/dashboard')
+      }
     }
-  }, [user])
+
+    checkAuthorization()
+  }, [user, id, navigate])
 
   const handleChange = (
-    field: keyof FormData | 'reward.amount' | 'reward.token' | 'company.name' | 'status', 
+    field: keyof FormData | 'reward.amount' | 'reward.token' | 'reward.usd_equivalent', 
     value: any
   ) => {
     setFormData(prev => {
       if (field === 'reward.amount') {
-        return { ...prev, reward: { ...prev.reward, amount: Number(value) } }
+        const amount = Number(value)
+        return { 
+          ...prev, 
+          reward: { 
+            ...prev.reward, 
+            amount,
+            usd_equivalent: amount // For now, assume 1:1 conversion
+          } 
+        }
       }
       if (field === 'reward.token') {
         return { ...prev, reward: { ...prev.reward, token: value } }
       }
-      if (field === 'company.name') {
-        return { ...prev, company: { ...prev.company, name: value } }
+      if (field === 'reward.usd_equivalent') {
+        return { ...prev, reward: { ...prev.reward, usd_equivalent: Number(value) } }
       }
       return { ...prev, [field]: value }
     })
   }
 
   const validateForm = () => {
-    const requiredFields: (keyof FormData)[] = ['title', 'description', 'category', 'due_date']
+    const requiredFields: (keyof FormData)[] = ['title', 'category', 'end_date']
     const emptyFields = requiredFields.filter(field => !formData[field])
 
     if (emptyFields.length > 0) {
@@ -130,9 +211,10 @@ export default function EditBounty() {
       return false
     }
 
-    const dueDate = new Date(formData.due_date)
-    if (dueDate < new Date()) {
-      toast.error("Due date cannot be in the past")
+    const endDate = new Date(formData.end_date)
+    const startDate = new Date(formData.start_date)
+    if (endDate <= startDate) {
+      toast.error("End date must be after start date")
       return false
     }
 
@@ -171,7 +253,7 @@ export default function EditBounty() {
         toast.success("Bounty published successfully!")
       }
 
-      navigate('/bounties')
+      navigate('/sponsor/dashboard')
     } catch (error) {
       console.error('Error saving bounty:', error)
       toast.error(id ? "Failed to update bounty" : "Failed to publish bounty")
@@ -199,7 +281,7 @@ export default function EditBounty() {
             variant="ghost"
             size="icon"
             className={`text-theme-muted hover:text-theme-primary hover:bg-[#C1A461]/10`}
-            onClick={() => navigate('/bounties')}
+            onClick={() => navigate('/sponsor/dashboard')}
           >
             <X className="h-5 w-5" />
           </Button>
@@ -221,13 +303,26 @@ export default function EditBounty() {
           {/* Description */}
           <div className="space-y-2">
             <Label className="text-theme-primary">
-              Description <span className="text-red-500">*</span>
+              Description
             </Label>
             <Textarea
               placeholder="Describe the bounty requirements and deliverables"
-              value={formData.description}
+              value={formData.description || ''}
               onChange={(e) => handleChange('description', e.target.value)}
               className={`input-theme min-h-[120px]`}
+            />
+          </div>
+
+          {/* Requirements */}
+          <div className="space-y-2">
+            <Label className="text-theme-primary">
+              Requirements
+            </Label>
+            <Textarea
+              placeholder="Specific requirements and criteria for completion"
+              value={formData.requirements || ''}
+              onChange={(e) => handleChange('requirements', e.target.value)}
+              className={`input-theme min-h-[80px]`}
             />
           </div>
 
@@ -287,17 +382,81 @@ export default function EditBounty() {
             </div>
           </div>
 
-          {/* Due Date */}
+          {/* Date Range */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-theme-primary">Start Date</Label>
+              <Input 
+                type="date"
+                value={formData.start_date}
+                onChange={(e) => handleChange('start_date', e.target.value)}
+                className={`input-theme`}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-theme-primary">
+                End Date <span className="text-red-500">*</span>
+              </Label>
+              <Input 
+                type="date"
+                value={formData.end_date}
+                min={formData.start_date || new Date().toISOString().split('T')[0]}
+                onChange={(e) => handleChange('end_date', e.target.value)}
+                className={`input-theme`}
+              />
+            </div>
+          </div>
+
+          {/* Additional Fields */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-theme-primary">Max Submissions</Label>
+              <Input 
+                type="number"
+                min="1"
+                value={formData.max_submissions}
+                onChange={(e) => handleChange('max_submissions', Number(e.target.value))}
+                className={`input-theme`}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-theme-primary">Review Timeframe (days)</Label>
+              <Input 
+                type="number"
+                min="1"
+                value={formData.review_timeframe}
+                onChange={(e) => handleChange('review_timeframe', Number(e.target.value))}
+                className={`input-theme`}
+              />
+            </div>
+          </div>
+
+          {/* Difficulty Level */}
           <div className="space-y-2">
-            <Label className="text-theme-primary">
-              Due Date <span className="text-red-500">*</span>
-            </Label>
-            <Input 
-              type="date"
-              value={formData.due_date}
-              min={new Date().toISOString().split('T')[0]}
-              onChange={(e) => handleChange('due_date', e.target.value)}
-              className={`input-theme`}
+            <Label className="text-theme-primary">Difficulty Level</Label>
+            <Select
+              value={formData.difficulty_level}
+              onValueChange={(value: 'beginner' | 'intermediate' | 'advanced') => handleChange('difficulty_level', value)}
+            >
+              <SelectTrigger className={`input-theme`}>
+                <SelectValue placeholder="Select difficulty" />
+              </SelectTrigger>
+              <SelectContent className={`card-theme`}>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Submission Guidelines */}
+          <div className="space-y-2">
+            <Label className="text-theme-primary">Submission Guidelines</Label>
+            <Textarea
+              placeholder="Instructions for how to submit work for this bounty"
+              value={formData.submission_guidelines || ''}
+              onChange={(e) => handleChange('submission_guidelines', e.target.value)}
+              className={`input-theme min-h-[80px]`}
             />
           </div>
 
