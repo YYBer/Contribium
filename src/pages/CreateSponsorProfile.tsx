@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,12 +8,19 @@ import { toast } from 'react-hot-toast'
 import { supabase } from "@/lib/supabase"
 import { useUser } from "@/contexts/UserContext"
 import { useTheme } from "@/contexts/ThemeContext"
+import { useDropzone } from 'react-dropzone'
+import { Upload, X } from 'lucide-react'
 
 interface FormData {
   name: string
   description: string
   website_url: string
   twitter_handle: string
+}
+
+interface PhotoFile {
+  file: File
+  preview: string
 }
 
 export function CreateSponsorProfile() {
@@ -23,6 +30,7 @@ export function CreateSponsorProfile() {
   const [loading, setLoading] = useState(false)
   const [checking, setChecking] = useState(true)
   const [useFallback, setUseFallback] = useState(false)  // Track if we need to use fallback
+  const [photoFiles, setPhotoFiles] = useState<PhotoFile[]>([])
   const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
@@ -88,7 +96,102 @@ export function CreateSponsorProfile() {
     }
     
     checkSponsorProfile()
-  }, [user, navigate]) 
+  }, [user, navigate])
+
+  // Photo upload handlers
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const validFiles = acceptedFiles.filter(file => {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif']
+      if (!validTypes.includes(file.type)) {
+        toast.error(`${file.name}: Please upload a valid image file (JPG, PNG, or GIF)`)
+        return false
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name}: File size must be less than 5MB`)
+        return false
+      }
+      
+      return true
+    })
+
+    // Check total photos limit (5 photos max)
+    const currentCount = photoFiles.length
+    const newFiles = validFiles.slice(0, 5 - currentCount)
+    
+    if (validFiles.length > newFiles.length) {
+      toast.error('Maximum 5 photos allowed')
+    }
+
+    // Create preview URLs and add to state
+    const newPhotos: PhotoFile[] = newFiles.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }))
+
+    setPhotoFiles(prev => [...prev, ...newPhotos])
+  }, [photoFiles, toast])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+      'image/gif': ['.gif']
+    },
+    maxFiles: 5,
+    maxSize: 5 * 1024 * 1024, // 5MB in bytes
+  })
+
+  const removePhoto = (index: number) => {
+    setPhotoFiles(prev => {
+      const newPhotos = [...prev]
+      // Revoke the preview URL to free memory
+      URL.revokeObjectURL(newPhotos[index].preview)
+      newPhotos.splice(index, 1)
+      return newPhotos
+    })
+  }
+
+  const uploadPhotos = async (): Promise<string[]> => {
+    if (photoFiles.length === 0) return []
+    
+    try {
+      const uploadPromises = photoFiles.map(async (photoFile) => {
+        const fileExt = photoFile.file.name.split('.').pop()?.toLowerCase() || 'jpg'
+        const fileName = `sponsor-${user?.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
+        
+        const { data, error: uploadError } = await supabase.storage
+          .from('sponsor-photos')
+          .upload(fileName, photoFile.file, {
+            contentType: photoFile.file.type,
+            upsert: true
+          })
+          
+        if (uploadError) {
+          console.error('Upload error:', uploadError)
+          throw uploadError
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('sponsor-photos')
+          .getPublicUrl(fileName)
+        
+        return publicUrl
+      })
+
+      const photoUrls = await Promise.all(uploadPromises)
+      return photoUrls
+      
+    } catch (error) {
+      console.error('Error uploading photos:', error)
+      toast.error('Failed to upload photos. Please try again.')
+      throw error
+    }
+  } 
 
   // Fallback method using direct fetch
   const createSponsorWithFetch = async () => {
@@ -106,6 +209,16 @@ export function CreateSponsorProfile() {
       setLoading(true)
       console.log("Creating sponsor profile using direct fetch for user:", user.id)
       
+      // Upload photos first
+      let profilePhotos: string[] = []
+      try {
+        profilePhotos = await uploadPhotos()
+      } catch (photoError) {
+        console.error('Photo upload failed:', photoError)
+        // Continue without photos, don't fail the entire process
+        toast.error('Photo upload failed, but profile will be created without photos')
+      }
+      
       const sponsorData = {
         user_id: user.id,
         name: formData.name,
@@ -113,6 +226,7 @@ export function CreateSponsorProfile() {
         website_url: formData.website_url || null,
         twitter_handle: formData.twitter_handle || null,
         logo_url: user.avatar_url,
+        profile_photos: profilePhotos.length > 0 ? profilePhotos : null,
         is_verified: false,
         total_bounties_count: 0,
         total_projects_count: 0,
@@ -241,6 +355,60 @@ export function CreateSponsorProfile() {
               className={`input-theme`}
               placeholder="@username"
             />
+          </div>
+          
+          {/* Photo Upload Section */}
+          <div className="space-y-4">
+            <Label className="text-theme-primary">
+              Profile Photos 
+              <span className="text-theme-muted text-sm ml-2">(Optional - Max 5 photos, 5MB each)</span>
+            </Label>
+            
+            {/* Photo Upload Dropzone */}
+            <div 
+              {...getRootProps()} 
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer
+                ${isDragActive 
+                  ? 'border-theme-primary bg-theme-accent/20' 
+                  : 'border-theme-secondary hover:border-theme-accent'}`}
+            >
+              <input {...getInputProps()} />
+              <Upload className="w-8 h-8 mx-auto mb-2 text-theme-muted" />
+              <p className="text-theme-primary mb-1">
+                {isDragActive 
+                  ? 'Drop photos here...' 
+                  : 'Click to upload or drag and drop photos'
+                }
+              </p>
+              <p className="text-sm text-theme-muted">
+                PNG, JPG, GIF up to 5MB each • {5 - photoFiles.length} photos remaining
+              </p>
+            </div>
+
+            {/* Photo Previews */}
+            {photoFiles.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {photoFiles.map((photo, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={photo.preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border border-theme-secondary"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                      {Math.round(photo.file.size / 1024)}KB
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

@@ -77,10 +77,11 @@ export default function Home() {
           setLoading(false)
         }
       }
-    fetchBounties()
+      
+      fetchBounties()
     
-    // Add debug function to test bounty fetching
-    (window as any).testBountyFetch = fetchBounties
+      // Add debug function to test bounty fetching
+      ;(window as any).testBountyFetch = fetchBounties
   }, [selectedStatus])
 
   const getInitials = (name: string | null) => {

@@ -8,7 +8,7 @@ import { Button } from "../components/ui/button"
 
 export default function OnboardingSteps() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-theme-primary">
       {/* Hero Section */}
       <section className="gradient-sponsor-hero text-white py-20 px-8">
         <div className="max-w-6xl mx-auto text-center space-y-8">
@@ -45,7 +45,7 @@ export default function OnboardingSteps() {
             <h2 className="text-4xl font-bold text-sponsor-secondary font-sentient">
               Choose Your Path
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-theme-muted max-w-2xl mx-auto">
               Select the engagement model that best fits your project needs
             </p>
           </div>
@@ -63,7 +63,7 @@ export default function OnboardingSteps() {
                   </div>
                 </div>
                 
-                <p className="text-gray-600 text-lg">
+                <p className="text-theme-muted text-lg">
                   Open competitions where multiple contributors compete for your prize pool. Perfect for creative work and innovation challenges.
                 </p>
                 
@@ -76,7 +76,7 @@ export default function OnboardingSteps() {
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-sponsor-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700">{item}</span>
+                      <span className="text-theme-secondary">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -99,7 +99,7 @@ export default function OnboardingSteps() {
                   </div>
                 </div>
                 
-                <p className="text-gray-600 text-lg">
+                <p className="text-theme-muted text-lg">
                   Direct partnerships with individual experts. Ideal for complex, long-term work requiring close collaboration.
                 </p>
                 
@@ -112,7 +112,7 @@ export default function OnboardingSteps() {
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-sponsor-accent flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700">{item}</span>
+                      <span className="text-theme-secondary">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -131,7 +131,7 @@ export default function OnboardingSteps() {
             <h2 className="text-4xl font-bold text-sponsor-secondary font-sentient">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-theme-muted max-w-2xl mx-auto">
               Start your journey with Contribium in three simple steps
             </p>
           </div>
@@ -144,10 +144,10 @@ export default function OnboardingSteps() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-sponsor-secondary font-sentient">STEP 1</h3>
-                  <p className="text-gray-600">Create a profile</p>
+                  <p className="text-theme-muted">Create a profile</p>
                 </div>
               </div>
-              <div className="bg-white rounded-xl border border-sponsor-primary/20 p-8 shadow-lg">
+              <div className="bg-theme-primary rounded-xl border border-sponsor-primary/20 p-8 shadow-lg">
                 <CreateSponsorProfile />
               </div>
             </div>
@@ -159,10 +159,10 @@ export default function OnboardingSteps() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-sponsor-secondary font-sentient">STEP 2</h3>
-                  <p className="text-gray-600">Post your listing</p>
+                  <p className="text-theme-muted">Post your listing</p>
                 </div>
               </div>
-              <div className="bg-white rounded-xl border border-sponsor-accent/20 p-8 shadow-lg">
+              <div className="bg-theme-primary rounded-xl border border-sponsor-accent/20 p-8 shadow-lg">
                 <PostListing />
               </div>
             </div>
@@ -174,10 +174,10 @@ export default function OnboardingSteps() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-sponsor-secondary font-sentient">STEP 3</h3>
-                  <p className="text-gray-600">Get submissions</p>
+                  <p className="text-theme-muted">Get submissions</p>
                 </div>
               </div>
-              <div className="bg-white rounded-xl border border-sponsor-secondary/20 p-8 shadow-lg">
+              <div className="bg-theme-primary rounded-xl border border-sponsor-secondary/20 p-8 shadow-lg">
                 <ViewSubmissions />
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function OnboardingSteps() {
             <h2 className="text-4xl font-bold text-sponsor-secondary font-sentient">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-theme-muted max-w-2xl mx-auto">
               Get answers to common questions about sponsoring on Contribium
             </p>
           </div>
@@ -232,12 +232,12 @@ export default function OnboardingSteps() {
                 <AccordionItem 
                   key={index} 
                   value={`item-${index}`} 
-                  className="bg-white border border-sponsor-primary/20 rounded-lg px-6 data-[state=open]:border-sponsor-primary/40"
+                  className="bg-theme-primary border border-sponsor-primary/20 rounded-lg px-6 data-[state=open]:border-sponsor-primary/40"
                 >
                   <AccordionTrigger className="text-sponsor-secondary hover:text-sponsor-primary hover:no-underline font-medium py-6">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-gray-600 pb-6 text-base leading-relaxed">
+                  <AccordionContent className="text-theme-muted pb-6 text-base leading-relaxed">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>

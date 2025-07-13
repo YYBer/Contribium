@@ -581,6 +581,41 @@ export default function SponsorDashboard() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
+            {/* Sponsor Profile Photos */}
+            {sponsor.profile_photos && sponsor.profile_photos.length > 0 && (
+              <Card className="card-sponsor mb-6">
+                <CardHeader className="border-b border-sponsor-primary/20">
+                  <CardTitle className="text-sponsor-secondary font-sentient text-xl">Profile Gallery</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {sponsor.profile_photos.map((photo, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={photo}
+                          alt={`${sponsor.name} photo ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border border-sponsor-primary/20 group-hover:border-sponsor-primary transition-all duration-200"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-white hover:bg-white/20"
+                            onClick={() => window.open(photo, '_blank')}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             <div className="grid md:grid-cols-2 gap-6">
               {/* Recent Bounties */}
               <Card className="card-sponsor">

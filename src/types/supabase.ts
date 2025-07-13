@@ -19,6 +19,7 @@ export interface Sponsor {
   name: string
   description: string | null
   logo_url: string | null
+  profile_photos: string[] | null
   website_url: string | null
   twitter_handle: string | null
   github_handle: string | null

@@ -249,6 +249,33 @@ export default function BountyDetails() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Sponsor Photos */}
+            {bounty.sponsor?.profile_photos && bounty.sponsor.profile_photos.length > 0 && (
+              <Card className={`bg-theme-primary border-theme-primary`}>
+                <CardContent className="p-4">
+                  <h3 className={`font-bold text-theme-primary mb-3`}>SPONSOR GALLERY</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {bounty.sponsor.profile_photos.slice(0, 4).map((photo, index) => (
+                      <img
+                        key={index}
+                        src={photo}
+                        alt={`${bounty.sponsor?.name} photo ${index + 1}`}
+                        className="w-full h-20 object-cover rounded-lg border border-theme-secondary"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {bounty.sponsor.profile_photos.length > 4 && (
+                    <p className="text-xs text-theme-muted mt-2 text-center">
+                      +{bounty.sponsor.profile_photos.length - 4} more photos
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </aside>
 
           {/* Main Content */}
