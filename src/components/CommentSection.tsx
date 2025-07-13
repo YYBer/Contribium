@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Send, Loader2, Edit, Trash, Award } from 'lucide-react';
+import { MessageSquare, Send, Loader2, Edit, Trash, Award, Reply, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -13,12 +13,16 @@ interface Comment {
   bounty_id: string;
   user_id: string;
   content: string;
+  parent_comment_id: string | null;
+  like_count: number;
   created_at: string;
   user?: {
     full_name: string | null;
     avatar_url: string | null;
     username: string | null;
   };
+  replies?: Comment[];
+  is_liked?: boolean;
 }
 
 interface CommentSectionProps {
@@ -30,9 +34,9 @@ interface CommentSectionProps {
 
 // Comment service functions - simplified queries to avoid 406 errors
 const CommentService = {
-  getBountyComments: async (bountyId: string): Promise<Comment[]> => {
+  getBountyComments: async (bountyId: string, userId?: string): Promise<Comment[]> => {
     try {
-      // Simpler query with no nested joins
+      // Fetch all comments for the bounty
       const { data, error } = await supabase
         .from('bounty_comments')
         .select('*, user:users(full_name, avatar_url, username)')
@@ -40,14 +44,63 @@ const CommentService = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      const comments = data || [];
+      
+      // If user is logged in, fetch their likes for these comments
+      let userLikes: Set<string> = new Set();
+      if (userId && comments.length > 0) {
+        const commentIds = comments.map(c => c.id);
+        const { data: likes } = await supabase
+          .from('comment_likes')
+          .select('comment_id')
+          .eq('user_id', userId)
+          .in('comment_id', commentIds);
+        
+        userLikes = new Set(likes?.map(like => like.comment_id) || []);
+      }
+      
+      // Organize comments into nested structure
+      const commentMap = new Map<string, Comment>();
+      const rootComments: Comment[] = [];
+      
+      // First pass: create comment objects with empty replies array and like status
+      comments.forEach(comment => {
+        commentMap.set(comment.id, { 
+          ...comment, 
+          replies: [],
+          is_liked: userLikes.has(comment.id)
+        });
+      });
+      
+      // Second pass: organize into parent-child relationships
+      comments.forEach(comment => {
+        const commentWithReplies = commentMap.get(comment.id)!;
+        if (comment.parent_comment_id) {
+          // This is a reply, add it to parent's replies
+          const parent = commentMap.get(comment.parent_comment_id);
+          if (parent) {
+            parent.replies!.push(commentWithReplies);
+          }
+        } else {
+          // This is a root comment
+          rootComments.push(commentWithReplies);
+        }
+      });
+      
+      // Sort replies by created_at ascending (oldest first)
+      rootComments.forEach(comment => {
+        comment.replies!.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      });
+      
+      return rootComments;
     } catch (error) {
       console.error('Error fetching bounty comments:', error);
       throw error;
     }
   },
 
-  createComment: async (bountyId: string, userId: string, content: string): Promise<Comment> => {
+  createComment: async (bountyId: string, userId: string, content: string, parentCommentId?: string): Promise<Comment> => {
     try {
       // First insert the comment
       const { error: insertError } = await supabase
@@ -55,7 +108,8 @@ const CommentService = {
         .insert({
           bounty_id: bountyId,
           user_id: userId,
-          content: content
+          content: content,
+          parent_comment_id: parentCommentId || null
         });
 
       if (insertError) throw insertError;
@@ -71,7 +125,7 @@ const CommentService = {
         .single();
 
       if (error) throw error;
-      return data;
+      return { ...data, replies: [] };
     } catch (error) {
       console.error('Error creating comment:', error);
       throw error;
@@ -112,6 +166,27 @@ const CommentService = {
       .eq('user_id', userId); // Security: ensure user owns comment
 
     if (error) throw error;
+  },
+
+  likeComment: async (commentId: string, userId: string): Promise<void> => {
+    const { error } = await supabase
+      .from('comment_likes')
+      .insert({
+        comment_id: commentId,
+        user_id: userId
+      });
+
+    if (error) throw error;
+  },
+
+  unlikeComment: async (commentId: string, userId: string): Promise<void> => {
+    const { error } = await supabase
+      .from('comment_likes')
+      .delete()
+      .eq('comment_id', commentId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
   }
 };
 
@@ -123,6 +198,8 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
   const [commentText, setCommentText] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
   
   // Use a ref to store the subscription so we can clean it up properly
   const subscriptionRef = useRef<any>(null);
@@ -142,7 +219,7 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
     const fetchComments = async () => {
       try {
         setLoading(true);
-        const data = await CommentService.getBountyComments(bountyId);
+        const data = await CommentService.getBountyComments(bountyId, user?.id);
         if (isMounted) {
           setComments(data);
         }
@@ -205,7 +282,7 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
             // Handle all events with a single refresh of the comments
             if (isMounted) {
               try {
-                const data = await CommentService.getBountyComments(bountyId);
+                const data = await CommentService.getBountyComments(bountyId, user?.id);
                 setComments(data);
               } catch (err) {
                 console.error('Error refreshing comments:', err);
@@ -346,12 +423,16 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
       bounty_id: bountyId,
       user_id: user.id,
       content: commentContent,
+      parent_comment_id: null,
+      like_count: 0,
+      is_liked: false,
       created_at: new Date().toISOString(),
       user: {
         full_name: user.full_name,
         avatar_url: user.avatar_url,
         username: user.username
-      }
+      },
+      replies: []
     };
     
     // Add it to the UI immediately
@@ -381,6 +462,50 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
       setComments(prev => prev.filter(comment => comment.id !== optimisticComment.id));
       // Restore the comment text in case of error
       setCommentText(commentContent);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Function to post a reply
+  const postReply = async (parentCommentId: string) => {
+    if (!replyText.trim()) return;
+    if (!user) {
+      toast.error('You must be logged in to reply');
+      return;
+    }
+
+    const replyContent = replyText.trim();
+    setReplyText('');
+    setReplyingToCommentId(null);
+
+    try {
+      setSubmitting(true);
+      
+      // Create the reply
+      const newReply = await CommentService.createComment(
+        bountyId,
+        user.id,
+        replyContent,
+        parentCommentId
+      );
+      
+      // Add the reply to the parent comment's replies
+      setComments(prev => prev.map(comment => {
+        if (comment.id === parentCommentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), newReply]
+          };
+        }
+        return comment;
+      }));
+      
+    } catch (error) {
+      console.error('Error posting reply:', error);
+      toast.error('Failed to post reply');
+      setReplyText(replyContent);
+      setReplyingToCommentId(parentCommentId);
     } finally {
       setSubmitting(false);
     }
@@ -491,6 +616,50 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
     return comment.user_id === sponsorId;
   };
 
+  // Handle like/unlike comment
+  const handleLikeComment = async (commentId: string, isCurrentlyLiked: boolean) => {
+    if (!user) {
+      toast.error('You must be logged in to like comments');
+      return;
+    }
+
+    // Optimistically update UI
+    const updateCommentLike = (comments: Comment[]): Comment[] => {
+      return comments.map(comment => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            is_liked: !isCurrentlyLiked,
+            like_count: isCurrentlyLiked ? comment.like_count - 1 : comment.like_count + 1
+          };
+        }
+        // Also update in replies
+        if (comment.replies && comment.replies.length > 0) {
+          return {
+            ...comment,
+            replies: updateCommentLike(comment.replies)
+          };
+        }
+        return comment;
+      });
+    };
+
+    setComments(prev => updateCommentLike(prev));
+
+    try {
+      if (isCurrentlyLiked) {
+        await CommentService.unlikeComment(commentId, user.id);
+      } else {
+        await CommentService.likeComment(commentId, user.id);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast.error('Failed to update like');
+      // Revert optimistic update on error
+      setComments(prev => updateCommentLike(prev));
+    }
+  };
+
   return (
     <section>
       <div className={`flex items-center gap-2 mb-4 ${textColor}`}>
@@ -546,98 +715,300 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
           </div>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="flex gap-4 group">
-              <Avatar>
-                <AvatarImage src={comment.user?.avatar_url || undefined} />
-                <AvatarFallback className={`bg-[#C1A461]/20 ${textColor}`}>
-                  {getInitials(comment.user?.full_name ?? null)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className={`font-medium ${textColor}`}>
-                      {comment.user?.full_name || 'Anonymous'}
-                    </span>
-                    
-                    {/* Sponsor badge - check if comment is from sponsor */}
-                    {isFromSponsor(comment) && (
-                      <Badge className={`${sponsorBadgeBg} ${sponsorBadgeText} flex items-center gap-1`}>
-                        <Award className="h-3 w-3" />
-                        <span>Sponsor</span>
-                      </Badge>
-                    )}
-                    
-                    <span className={`text-sm ${mutedTextColor}`}>
-                      {formatDate(comment.created_at)}
-                    </span>
-                  </div>
-                  {user?.id === comment.user_id && (
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => startEditingComment(comment)}
-                        className={`${mutedTextColor} hover:${textColor}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteComment(comment.id)}
-                        className={`${mutedTextColor} hover:${textColor}`}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
+            <div key={comment.id}>
+              {/* Main Comment */}
+              <div className="flex gap-4 group">
+                <Avatar>
+                  <AvatarImage src={comment.user?.avatar_url || undefined} />
+                  <AvatarFallback className={`bg-[#C1A461]/20 ${textColor}`}>
+                    {getInitials(comment.user?.full_name ?? null)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium ${textColor}`}>
+                        {comment.user?.full_name || 'Anonymous'}
+                      </span>
+                      
+                      {/* Sponsor badge - check if comment is from sponsor */}
+                      {isFromSponsor(comment) && (
+                        <Badge className={`${sponsorBadgeBg} ${sponsorBadgeText} flex items-center gap-1`}>
+                          <Award className="h-3 w-3" />
+                          <span>Sponsor</span>
+                        </Badge>
+                      )}
+                      
+                      <span className={`text-sm ${mutedTextColor}`}>
+                        {formatDate(comment.created_at)}
+                      </span>
                     </div>
-                  )}
-                </div>
-                
-                {editingCommentId === comment.id ? (
-                  <div className="mt-1 flex gap-2">
-                    <input
-                      type="text"
-                      value={editingCommentText}
-                      onChange={(e) => setEditingCommentText(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          saveEditedComment();
-                        } else if (e.key === 'Escape') {
+                    {user?.id === comment.user_id && (
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditingComment(comment)}
+                          className={`${mutedTextColor} hover:${textColor}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteComment(comment.id)}
+                          className={`${mutedTextColor} hover:${textColor}`}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {editingCommentId === comment.id ? (
+                    <div className="mt-1 flex gap-2">
+                      <input
+                        type="text"
+                        value={editingCommentText}
+                        onChange={(e) => setEditingCommentText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            saveEditedComment();
+                          } else if (e.key === 'Escape') {
+                            setEditingCommentId(null);
+                            setEditingCommentText('');
+                          }
+                        }}
+                        className={`flex-1 ${bgColor} border ${borderColor} rounded-lg px-4 py-2 ${textColor} focus:outline-none focus:border-[#C1A461]`}
+                        disabled={submitting}
+                        autoFocus
+                      />
+                      <Button
+                        onClick={saveEditedComment}
+                        disabled={submitting || !editingCommentText.trim()}
+                        className="bg-[#C1A461] hover:bg-[#C1A461]/90 text-[#1B2228]"
+                      >
+                        {submitting ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
                           setEditingCommentId(null);
                           setEditingCommentText('');
-                        }
-                      }}
-                      className={`flex-1 ${bgColor} border ${borderColor} rounded-lg px-4 py-2 ${textColor} focus:outline-none focus:border-[#C1A461]`}
-                      disabled={submitting}
-                      autoFocus
-                    />
-                    <Button
-                      onClick={saveEditedComment}
-                      disabled={submitting || !editingCommentText.trim()}
-                      className="bg-[#C1A461] hover:bg-[#C1A461]/90 text-[#1B2228]"
-                    >
-                      {submitting ? 'Saving...' : 'Save'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEditingCommentId(null);
-                        setEditingCommentText('');
-                      }}
-                      disabled={submitting}
-                      className="border-[#C1A461]/20 text-[#C1A461]"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <p className={`mt-1 ${textColor}`}>
-                    {comment.content}
-                  </p>
-                )}
+                        }}
+                        disabled={submitting}
+                        className="border-[#C1A461]/20 text-[#C1A461]"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <p className={`mt-1 ${textColor}`}>
+                        {comment.content}
+                      </p>
+                      
+                      {/* Like and Reply buttons */}
+                      <div className="flex items-center gap-4 mt-2">
+                        {/* Like button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleLikeComment(comment.id, comment.is_liked || false)}
+                          className={`${comment.is_liked ? 'text-red-500 hover:text-red-600' : mutedTextColor + ' hover:text-red-500'} text-xs flex items-center gap-1`}
+                          disabled={!user}
+                        >
+                          <Heart className={`h-3 w-3 ${comment.is_liked ? 'fill-current' : ''}`} />
+                          <span>{comment.like_count || 0}</span>
+                        </Button>
+                        
+                        {/* Reply button */}
+                        {user && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setReplyingToCommentId(comment.id)}
+                            className={`${mutedTextColor} hover:${textColor} text-xs`}
+                          >
+                            <Reply className="h-3 w-3 mr-1" />
+                            Reply
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {/* Reply input */}
+                      {replyingToCommentId === comment.id && (
+                        <div className="mt-3 flex gap-2">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={user?.avatar_url || undefined} />
+                            <AvatarFallback className={`bg-[#C1A461]/20 ${textColor} text-xs`}>
+                              {getInitials(user?.full_name ?? null)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 flex gap-2">
+                            <input
+                              type="text"
+                              placeholder="Write a reply..."
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  postReply(comment.id);
+                                } else if (e.key === 'Escape') {
+                                  setReplyingToCommentId(null);
+                                  setReplyText('');
+                                }
+                              }}
+                              className={`flex-1 ${bgColor} border ${borderColor} rounded-lg px-3 py-1 text-sm ${textColor} placeholder-[#C1A461]/40 focus:outline-none focus:border-[#C1A461]`}
+                              disabled={submitting}
+                              autoFocus
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => postReply(comment.id)}
+                              disabled={submitting || !replyText.trim()}
+                              className={`${textColor} hover:bg-[#C1A461]/10`}
+                            >
+                              {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setReplyingToCommentId(null);
+                                setReplyText('');
+                              }}
+                              className={`${mutedTextColor} hover:${textColor}`}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
+              
+              {/* Replies */}
+              {comment.replies && comment.replies.length > 0 && (
+                <div className="ml-12 mt-4 space-y-4 border-l-2 border-gray-200 dark:border-gray-700 pl-4">
+                  {comment.replies.map((reply) => (
+                    <div key={reply.id} className="flex gap-3 group">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={reply.user?.avatar_url || undefined} />
+                        <AvatarFallback className={`bg-[#C1A461]/20 ${textColor} text-xs`}>
+                          {getInitials(reply.user?.full_name ?? null)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium text-sm ${textColor}`}>
+                              {reply.user?.full_name || 'Anonymous'}
+                            </span>
+                            
+                            {/* Sponsor badge for reply */}
+                            {isFromSponsor(reply) && (
+                              <Badge className={`${sponsorBadgeBg} ${sponsorBadgeText} flex items-center gap-1 text-xs`}>
+                                <Award className="h-2 w-2" />
+                                <span>Sponsor</span>
+                              </Badge>
+                            )}
+                            
+                            <span className={`text-xs ${mutedTextColor}`}>
+                              {formatDate(reply.created_at)}
+                            </span>
+                          </div>
+                          {user?.id === reply.user_id && (
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEditingComment(reply)}
+                                className={`${mutedTextColor} hover:${textColor} p-1`}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteComment(reply.id)}
+                                className={`${mutedTextColor} hover:${textColor} p-1`}
+                              >
+                                <Trash className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {editingCommentId === reply.id ? (
+                          <div className="mt-1 flex gap-2">
+                            <input
+                              type="text"
+                              value={editingCommentText}
+                              onChange={(e) => setEditingCommentText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  saveEditedComment();
+                                } else if (e.key === 'Escape') {
+                                  setEditingCommentId(null);
+                                  setEditingCommentText('');
+                                }
+                              }}
+                              className={`flex-1 ${bgColor} border ${borderColor} rounded-lg px-3 py-1 text-sm ${textColor} focus:outline-none focus:border-[#C1A461]`}
+                              disabled={submitting}
+                              autoFocus
+                            />
+                            <Button
+                              onClick={saveEditedComment}
+                              disabled={submitting || !editingCommentText.trim()}
+                              className="bg-[#C1A461] hover:bg-[#C1A461]/90 text-[#1B2228] text-xs px-2 py-1"
+                            >
+                              {submitting ? 'Saving...' : 'Save'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditingCommentText('');
+                              }}
+                              disabled={submitting}
+                              className="border-[#C1A461]/20 text-[#C1A461] text-xs px-2 py-1"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className={`mt-1 text-sm ${textColor}`}>
+                              {reply.content}
+                            </p>
+                            
+                            {/* Like button for reply */}
+                            <div className="flex items-center mt-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleLikeComment(reply.id, reply.is_liked || false)}
+                                className={`${reply.is_liked ? 'text-red-500 hover:text-red-600' : mutedTextColor + ' hover:text-red-500'} text-xs flex items-center gap-1`}
+                                disabled={!user}
+                              >
+                                <Heart className={`h-3 w-3 ${reply.is_liked ? 'fill-current' : ''}`} />
+                                <span>{reply.like_count || 0}</span>
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))
         )}

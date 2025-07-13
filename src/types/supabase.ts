@@ -55,11 +55,23 @@ export interface BountyComment {
   bounty_id: string
   user_id: string
   content: string
+  parent_comment_id: string | null
+  like_count: number
   created_at: string
   updated_at: string
   // Join relationships
   user?: User
   bounty?: Bounty
+  replies?: BountyComment[]
+  // Like status for current user
+  is_liked?: boolean
+}
+
+export interface CommentLike {
+  id: string
+  comment_id: string
+  user_id: string
+  created_at: string
 }
 
 // Bounty interface with sponsor relationship and improved tracking
@@ -163,6 +175,16 @@ export interface Database {
         Row: Bounty
         Insert: Omit<Bounty, 'id' | 'created_at' | 'updated_at' | 'current_submissions'>
         Update: Partial<Omit<Bounty, 'id' | 'created_at' | 'updated_at'>>
+      }
+      bounty_comments: {
+        Row: BountyComment
+        Insert: Omit<BountyComment, 'id' | 'created_at' | 'updated_at' | 'like_count'>
+        Update: Partial<Omit<BountyComment, 'id' | 'created_at' | 'updated_at'>>
+      }
+      comment_likes: {
+        Row: CommentLike
+        Insert: Omit<CommentLike, 'id' | 'created_at'>
+        Update: Partial<Omit<CommentLike, 'id' | 'created_at'>>
       }
       bounty_submissions: {
         Row: BountySubmission
