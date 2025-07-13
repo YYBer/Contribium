@@ -55,7 +55,6 @@ export function ViewSubmissions({ bountyId, projectId }: SubmissionProps) {
 
   const statusColors = {
     submitted: "bg-yellow-500/20 text-yellow-400",
-    in_review: "bg-blue-500/20 text-blue-400",
     accepted: "bg-green-500/20 text-green-400",
     rejected: "bg-red-500/20 text-red-400"
   }
@@ -163,7 +162,7 @@ export function ViewSubmissions({ bountyId, projectId }: SubmissionProps) {
 
   const handleStatusUpdate = async (
     submissionId: string, 
-    newStatus: 'accepted' | 'rejected' | 'in_review',
+    newStatus: 'accepted' | 'rejected',
     type: 'bounty' | 'project',
     feedback?: string
   ) => {
@@ -248,9 +247,6 @@ export function ViewSubmissions({ bountyId, projectId }: SubmissionProps) {
     switch (status) {
       case 'accepted':
         return `${baseContent}Congratulations! Your submission has been approved. The reward will be sent to your registered wallet address.\n\n${feedback || ''}`
-      
-      case 'in_review':
-        return `${baseContent}Your submission requires some improvements:\n\n${feedback}\n\nPlease update your submission with the requested changes.`
       
       case 'rejected':
         return `${baseContent}Unfortunately, your submission has been rejected.\n\n${feedback ? `Reason: ${feedback}` : ''}`
@@ -403,7 +399,7 @@ return (
                       onSubmit={(feedback) => {
                         handleStatusUpdate(
                           feedbackDialogState.submissionId!,
-                          feedbackDialogState.type === 'review' ? 'in_review' : 'rejected',
+                          'rejected',
                           feedbackDialogState.submissionType!,
                           feedback
                         )

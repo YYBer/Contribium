@@ -32,7 +32,7 @@ interface FormData {
     token: string
   }
   due_date: string
-  status: 'open' | 'in review' | 'completed'
+  status: 'open' | 'completed'
 }
 
 const INITIAL_FORM_DATA: FormData = {
@@ -307,7 +307,7 @@ export default function EditBounty() {
               <Label className="text-theme-primary">Status</Label>
               <Select
                 value={formData.status}
-                onValueChange={(value: 'open' | 'in review' | 'completed') => 
+                onValueChange={(value: 'open' | 'completed') => 
                   handleChange('status', value)
                 }
               >
@@ -316,7 +316,6 @@ export default function EditBounty() {
                 </SelectTrigger>
                 <SelectContent className={`card-theme`}>
                   <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in review">In Review</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                 </SelectContent>
               </Select>

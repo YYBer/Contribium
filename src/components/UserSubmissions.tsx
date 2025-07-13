@@ -19,7 +19,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import type { BountySubmission } from '@/types/supabase'
 
-type SubmissionStatus = 'all' | 'submitted' | 'in_review' | 'accepted' | 'rejected'
+type SubmissionStatus = 'all' | 'submitted' | 'accepted' | 'rejected'
 
 export function UserSubmissions() {
   const navigate = useNavigate()
@@ -40,9 +40,6 @@ export function UserSubmissions() {
     submitted: theme === 'dark' 
       ? "bg-yellow-500/20 text-yellow-400" 
       : "bg-yellow-100 text-yellow-600",
-    in_review: theme === 'dark' 
-      ? "bg-blue-500/20 text-blue-400" 
-      : "bg-blue-100 text-blue-600",
     accepted: theme === 'dark' 
       ? "bg-green-500/20 text-green-400" 
       : "bg-green-100 text-green-600",
@@ -53,7 +50,6 @@ export function UserSubmissions() {
 
   const statusIcons = {
     submitted: <Clock className="w-4 h-4" />,
-    in_review: <AlertCircle className="w-4 h-4" />,
     accepted: <CheckCircle className="w-4 h-4" />,
     rejected: <XCircle className="w-4 h-4" />
   }

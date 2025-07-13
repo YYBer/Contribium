@@ -46,9 +46,6 @@ export function useRewards() {
           availableQuests++
           activeCount++
           activeRewards += rewardAmount
-        } else if (bounty.status === 'in_review') {
-          activeCount++
-          activeRewards += rewardAmount
         } else if (bounty.status === 'completed') {
           distributedRewards += rewardAmount
           completedCount++

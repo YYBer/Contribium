@@ -25,7 +25,7 @@ export class BountyService {
     return data
   }
 
-  static async updateBountyStatus(id: string, status: 'open' | 'in_review' | 'completed') {
+  static async updateBountyStatus(id: string, status: 'open' | 'completed') {
     return this.updateBounty(id, { status })
   }
 
@@ -67,7 +67,7 @@ export class BountyService {
 
   static async updateSubmissionStatus(
     submissionId: string,
-    status: 'in_review' | 'accepted' | 'rejected',
+    status: 'accepted' | 'rejected',
     feedback?: string
   ) {
     const { data, error } = await supabase

@@ -1,5 +1,5 @@
 export type Category = 'content' | 'design' | 'development' | 'other'
-export type Status = 'open' | 'in_review' | 'completed'
+export type Status = 'open' | 'completed'
 export type Web3Interest = 'defi' | 'nft' | 'dao' | 'other'
 export type WorkExperience = '0-2' | '2-5' | '5-10' | '10+'
 export type ProjectCategory = 'frontend' | 'backend' | 'blockchain' | 'design' | 'content'
@@ -109,7 +109,7 @@ export interface BountySubmission {
   description: string
   submission_url: string
   tweet_url: string | null
-  status: 'submitted' | 'in_review' | 'accepted' | 'rejected'
+  status: 'submitted' | 'accepted' | 'rejected'
   feedback: string | null
   review_started_at: string | null
   completed_at: string | null
@@ -133,7 +133,7 @@ export interface ProjectSubmission {
   description: string
   submission_url: string
   repository_url: string | null
-  status: 'submitted' | 'in_review' | 'accepted' | 'rejected'
+  status: 'submitted' | 'accepted' | 'rejected'
   feedback: string | null
   review_started_at: string | null
   completed_at: string | null

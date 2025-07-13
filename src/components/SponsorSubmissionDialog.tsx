@@ -153,7 +153,6 @@ export function SponsorSubmissionDialog({
               className={
                 submission.status === 'accepted' ? 'ml-auto bg-green-500/20 text-green-500' :
                 submission.status === 'rejected' ? 'ml-auto bg-red-500/20 text-red-500' :
-                submission.status === 'in_review' ? 'ml-auto bg-blue-500/20 text-blue-500' :
                 'ml-auto bg-yellow-500/20 text-yellow-500'
               }
             >

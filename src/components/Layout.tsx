@@ -239,7 +239,7 @@ const Layout = () => {
             <Card className="card-theme">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-theme-primary font-sentient">TOP EARNERS</h2>
+                  <h2 className="font-bold text-theme-primary font-sentient">TOP CAPTAINS</h2>
                   <Link 
                     to="/leaderboard"
                     className="text-sm text-theme-primary hover:underline"

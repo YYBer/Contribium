@@ -167,8 +167,8 @@ export default function Home() {
                 </div>
 
                 <Tabs value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as Status)} className="w-full">
-                  <TabsList className={`grid w-full max-w-[400px] grid-cols-3 mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-[#AC8C43]'}`}>
-                    {["open", "in review", "completed"].map((tab) => (
+                  <TabsList className={`grid w-full max-w-[400px] grid-cols-2 mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-[#AC8C43]'}`}>
+                    {["open", "completed"].map((tab) => (
                       <TabsTrigger 
                         key={tab}
                         value={tab as Status}

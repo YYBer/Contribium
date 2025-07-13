@@ -475,8 +475,6 @@ export default function SponsorDashboard() {
         return 'bg-green-500/20 text-green-500';
       case 'rejected':
         return 'bg-red-500/20 text-red-500';
-      case 'in_review':
-        return 'bg-blue-500/20 text-blue-500';
       default:
         return 'bg-yellow-500/20 text-yellow-500';
     }
@@ -641,7 +639,6 @@ export default function SponsorDashboard() {
                                   variant="outline" 
                                   className={
                                     bounty.status === 'open' ? 'badge-sponsor-success' :
-                                    bounty.status === 'in_review' ? 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30' :
                                     'badge-sponsor-accent'
                                   }
                                 >
@@ -763,7 +760,6 @@ export default function SponsorDashboard() {
                               variant="outline" 
                               className={
                                 bounty.status === 'open' ? 'bg-green-500/20 text-green-500' :
-                                bounty.status === 'in_review' ? 'bg-yellow-500/20 text-yellow-500' :
                                 'bg-blue-500/20 text-blue-500'
                               }
                             >
