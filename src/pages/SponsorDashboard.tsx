@@ -114,13 +114,10 @@ export default function SponsorDashboard() {
     try {
       setLoadingSubmissions(true)
       
-      // Fetch submissions for this bounty without joining with users
+      // Fetch submissions for this bounty - use existing user data columns
       const { data, error } = await supabase
       .from('bounty_submissions')
-      .select(`
-        *,
-        user:users(id, username, wallet_address, avatar_url)
-      `)
+      .select('*')
       .eq('bounty_id', bountyId)
       .order('created_at', { ascending: false })
 
@@ -130,6 +127,7 @@ export default function SponsorDashboard() {
         setSubmissions([])
       } else {
         console.log(`Found ${data?.length || 0} submissions for bounty ${bountyId}`)
+        // Data already contains user information in columns
         setSubmissions(data || [])
       }
     } catch (error) {
@@ -211,21 +209,12 @@ export default function SponsorDashboard() {
       // Refresh the submission data
       const { data: refreshedData, error: refreshError } = await supabase
         .from('bounty_submissions')
-        .select(`
-          *,
-          user:users(id, username, full_name, avatar_url, wallet_address)
-        `)
+        .select('*')
         .eq('id', submissionId)
         .single();
 
       if (!refreshError && refreshedData) {
-        const updatedSubmission = {
-          ...refreshedData,
-          user_username: refreshedData.user?.username || '',
-          user_full_name: refreshedData.user?.full_name || '',
-          user_avatar_url: refreshedData.user?.avatar_url || '',
-          user_wallet_address: refreshedData.user?.wallet_address || ''
-        };
+        const updatedSubmission = refreshedData;
         
         setSubmissions(prev => 
           prev.map(sub => 
