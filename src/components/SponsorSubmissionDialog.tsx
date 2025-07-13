@@ -125,7 +125,7 @@ export function SponsorSubmissionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`sm:max-w-[600px] ${bgColor} border-${borderColor}`}>
+      <DialogContent className={`sm:max-w-[600px] ${bgColor} border ${borderColor}`}>
         <DialogHeader>
           <DialogTitle className={textColor}>Submission Details</DialogTitle>
         </DialogHeader>
@@ -180,14 +180,14 @@ export function SponsorSubmissionDialog({
             <div>
               <h4 className={`font-medium ${textColor} mb-2`}>User Wallet Address</h4>
               <div className="flex items-center gap-2">
-                <div className={`flex-1 p-2 rounded border ${borderColor} bg-[#1B2228]/80 font-mono text-sm ${textColor}`}>
+                <div className={`flex-1 p-2 rounded border ${borderColor} ${bgColor} font-mono text-sm ${textColor}`}>
                   {submission.user_wallet_address || "No wallet address provided"}
                 </div>
                 {submission.user_wallet_address && (
                   <Button
                     variant="outline"
                     size="icon"
-                    className={`border-${borderColor} ${textColor} hover:bg-[#C1A461]/10`}
+                    className={`border ${borderColor} ${textColor} hover:bg-[#C1A461]/10`}
                     onClick={() => copyWalletAddress(submission.user_wallet_address)}
                   >
                     {showWalletCopied ? (

@@ -248,7 +248,7 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
     let isMounted = true;
     
     // Set up real-time subscription with improved error handling
-    const setupSubscription = () => {
+    const setupSubscription = async () => {
       try {
         // Clean up existing subscription if any
         if (subscriptionRef.current) {
@@ -261,14 +261,31 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
         }
         
         // Check authentication status before creating channel
-        const session = supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           console.log('No active session, deferring subscription setup');
           return;
         }
+
+        // Test table access before setting up real-time
+        try {
+          const { error: testError } = await supabase
+            .from('bounty_comments')
+            .select('id')
+            .limit(1);
+          
+          if (testError) {
+            console.error('Cannot access bounty_comments table:', testError);
+            throw new Error('Table access denied');
+          }
+        } catch (testErr) {
+          console.error('Table access test failed:', testErr);
+          throw testErr;
+        }
         
-        // Create and setup the channel
-        const channel = supabase.channel(`bounty-comments-${bountyId}`);
+        // Create and setup the channel with unique identifier
+        const channelName = `bounty-comments-${bountyId}-${Date.now()}`;
+        const channel = supabase.channel(channelName);
         
         // Configure the channel before subscribing
         channel.on('postgres_changes', 
@@ -282,6 +299,7 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
             // Handle all events with a single refresh of the comments
             if (isMounted) {
               try {
+                console.log('Real-time comment event:', payload.eventType);
                 const data = await CommentService.getBountyComments(bountyId, user?.id);
                 setComments(data);
               } catch (err) {
@@ -292,21 +310,42 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
         );
         
         // Now subscribe and store the reference
-        channel.subscribe((status) => {
-          // console.log('Subscription status:', status);
+        channel.subscribe((status, err) => {
+          console.log('Subscription status:', status);
           if (status === 'SUBSCRIBED') {
-            // console.log('Successfully subscribed to comments');
+            console.log('Successfully subscribed to comments for bounty:', bountyId);
           } else if (status === 'CHANNEL_ERROR') {
-            console.error('Channel error during subscription');
+            console.error('Channel error during subscription:', err);
+            console.error('Channel details:', { channelName, bountyId, userId: user?.id });
           } else if (status === 'TIMED_OUT') {
-            console.error('Subscription timed out');
+            console.error('Subscription timed out for bounty:', bountyId);
+          } else if (status === 'CLOSED') {
+            console.log('Channel closed for bounty:', bountyId);
           }
         });
         
         subscriptionRef.current = channel;
         
       } catch (error) {
-        console.error('Error setting up subscription:', error);
+        console.error('Error setting up real-time subscription:', error);
+        console.log('Falling back to manual refresh mode');
+        // Fallback: set up periodic refresh if real-time fails
+        const fallbackInterval = setInterval(async () => {
+          if (isMounted) {
+            try {
+              const data = await CommentService.getBountyComments(bountyId, user?.id);
+              setComments(data);
+            } catch (err) {
+              console.error('Error in fallback refresh:', err);
+            }
+          }
+        }, 30000); // Refresh every 30 seconds as fallback
+        
+        // Store interval reference for cleanup
+        subscriptionRef.current = { 
+          unsubscribe: () => clearInterval(fallbackInterval),
+          _isFallback: true 
+        };
       }
     };
     
@@ -343,11 +382,11 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
               if (!existingChannel.subscribe) {
                 console.log('Channel exists but not subscribed, removing and recreating');
                 supabase.removeChannel(existingChannel);
-                setupSubscription();
+                await setupSubscription();
               }
             } else {
               // console.log('No existing channel, setting up subscription');
-              setupSubscription();
+              await setupSubscription();
             }
           } catch (error) {
             console.error('Error in auth listener:', error);
@@ -373,7 +412,7 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
         const { data } = await supabase.auth.getSession();
         if (data.session?.user) {
           // console.log('Found existing session on component mount');
-          setupSubscription();
+          await setupSubscription();
         } else {
           console.log('No session on component mount, waiting for auth');
         }
@@ -394,10 +433,16 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
           authListener.data.subscription.unsubscribe();
         }
         
-        // Remove the real-time channel
+        // Remove the real-time channel or fallback interval
         if (subscriptionRef.current) {
           console.log('Cleaning up subscription on unmount');
-          supabase.removeChannel(subscriptionRef.current);
+          if (subscriptionRef.current._isFallback) {
+            // Clean up fallback interval
+            subscriptionRef.current.unsubscribe();
+          } else {
+            // Clean up real-time channel
+            supabase.removeChannel(subscriptionRef.current);
+          }
           subscriptionRef.current = null;
         }
       } catch (error) {

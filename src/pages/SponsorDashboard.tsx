@@ -180,8 +180,9 @@ export default function SponsorDashboard() {
       }
       
       // Only include transaction hash for accepted submissions
-      if (newStatus === 'accepted' && transactionHash.trim()) {
-        updateData.transaction_hash = transactionHash.trim()
+      if (newStatus === 'accepted') {
+        updateData.transaction_hash = transactionHash.trim() || null
+        console.log('Setting transaction hash:', updateData.transaction_hash)
       }
       
       // Update the submission status
@@ -238,7 +239,10 @@ export default function SponsorDashboard() {
       }
 
       // Show success message
-      toast.success(`Submission ${newStatus} successfully`);
+      const successMessage = newStatus === 'accepted' && transactionHash.trim() 
+        ? `Submission ${newStatus} successfully with transaction hash` 
+        : `Submission ${newStatus} successfully`
+      toast.success(successMessage);
       
       // Refresh submissions after a short delay
       setTimeout(() => {
