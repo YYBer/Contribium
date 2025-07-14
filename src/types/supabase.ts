@@ -103,6 +103,13 @@ export interface Bounty {
     token: string
     usd_equivalent: number
   }
+  is_tiered_reward: boolean
+  reward_tiers: {
+    position: number
+    amount: number
+    token: string
+    usd_equivalent: number
+  }[] | null
   submission_guidelines: string | null
   max_submissions: number
   current_submissions: number

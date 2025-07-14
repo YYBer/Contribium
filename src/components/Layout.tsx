@@ -121,7 +121,7 @@ const Layout = () => {
               <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
             </Link>
             <div className="hidden md:flex items-center gap-6">
-              {["Bounties", "Projects", "Grants", "Leaderboard"].map((item) => (
+              {["Bounties", "Projects", "Leaderboard"].map((item) => (
                 <Link 
                   key={item}
                   to={`/${item.toLowerCase()}`}

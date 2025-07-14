@@ -10,7 +10,7 @@ import LoadingPage from './pages/LoadingPage'
 import Home from './pages/Home'
 import { Bounties } from './pages/Bounties'
 import Projects from './pages/Projects'
-import Grants from './pages/Grants'
+// import Grants from './back-up/Grants'
 import Profile from './pages/Profile'
 import { EditProfile } from './pages/EditProfile'
 import AuthPage from './pages/Auth'
@@ -70,7 +70,7 @@ export default function App() {
               <Route path="/bounties" element={<Bounties />} />
               <Route path="/postlisting" element={<PostListing />} />
               <Route path="/projects" element={<Projects />} />
-              <Route path="/grants" element={<Grants />} />
+              {/* <Route path="/grants" element={<Grants />} /> */}
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/mysubmission" element={<MySubmission />} />
               <Route path="/editprofile" element={<EditProfile />} />

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { TieredRewardConfig } from "@/components/TieredRewardConfig"
 import { supabase } from "@/lib/supabase"
 import { useUser } from "@/contexts/UserContext"
 import { useTheme } from "@/contexts/ThemeContext"
@@ -29,6 +30,13 @@ interface FormData {
     token: string
     usd_equivalent: number
   }
+  is_tiered_reward: boolean
+  reward_tiers: {
+    position: number
+    amount: number
+    token: string
+    usd_equivalent: number
+  }[] | null
   submission_guidelines: string | null
   max_submissions: number
   start_date: string
@@ -50,6 +58,8 @@ const INITIAL_FORM_DATA: FormData = {
     token: "USD",
     usd_equivalent: 0
   },
+  is_tiered_reward: false,
+  reward_tiers: null,
   submission_guidelines: "",
   max_submissions: 10,
   start_date: new Date().toISOString().split('T')[0],
@@ -98,6 +108,8 @@ export default function EditBounty() {
               token: data.reward?.token || 'USD',
               usd_equivalent: data.reward?.usd_equivalent || data.reward?.amount || 0
             },
+            is_tiered_reward: data.is_tiered_reward || false,
+            reward_tiers: data.reward_tiers || null,
             submission_guidelines: data.submission_guidelines || '',
             max_submissions: data.max_submissions || 10,
             start_date: data.start_date ? data.start_date.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -171,6 +183,28 @@ export default function EditBounty() {
     checkAuthorization()
   }, [user, id, navigate])
 
+  const handleRewardChange = (reward: { amount: number; token: string; usd_equivalent: number }) => {
+    setFormData(prev => ({
+      ...prev,
+      reward
+    }))
+  }
+
+  const handleTieredRewardToggle = (enabled: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      is_tiered_reward: enabled,
+      reward_tiers: enabled ? (prev.reward_tiers || []) : null
+    }))
+  }
+
+  const handleTiersChange = (tiers: { position: number; amount: number; token: string; usd_equivalent: number }[]) => {
+    setFormData(prev => ({
+      ...prev,
+      reward_tiers: tiers
+    }))
+  }
+
   const handleChange = (
     field: keyof FormData | 'reward.amount' | 'reward.token' | 'reward.usd_equivalent', 
     value: any
@@ -209,6 +243,20 @@ export default function EditBounty() {
     if (!formData.reward.amount || formData.reward.amount <= 0) {
       toast.error("Please enter a valid reward amount")
       return false
+    }
+
+    // Validate tiered rewards if enabled
+    if (formData.is_tiered_reward && formData.reward_tiers) {
+      const totalTierAmount = formData.reward_tiers.reduce((sum, tier) => sum + tier.amount, 0)
+      if (totalTierAmount !== formData.reward.amount) {
+        toast.error("Total tier amounts must equal the total reward amount")
+        return false
+      }
+      
+      if (formData.reward_tiers.some(tier => tier.amount <= 0)) {
+        toast.error("All tier amounts must be greater than 0")
+        return false
+      }
     }
 
     const endDate = new Date(formData.end_date)
@@ -347,40 +395,15 @@ export default function EditBounty() {
             </Select>
           </div>
 
-          {/* Reward */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-theme-primary">
-                Reward Amount <span className="text-red-500">*</span>
-              </Label>
-              <Input 
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder="Amount"
-                value={formData.reward.amount}
-                onChange={(e) => handleChange('reward.amount', e.target.value)}
-                className={`input-theme`}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-theme-primary">
-                Token <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={formData.reward.token}
-                onValueChange={(value) => handleChange('reward.token', value)}
-              >
-                <SelectTrigger className={`input-theme`}>
-                  <SelectValue placeholder="Select token" />
-                </SelectTrigger>
-                <SelectContent className={`card-theme`}>
-                  {/* <SelectItem value="ALPH">ALPH</SelectItem> */}
-                  <SelectItem value="USD">USD</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          {/* Reward Configuration */}
+          <TieredRewardConfig
+            totalReward={formData.reward.amount}
+            onRewardChange={handleRewardChange}
+            onTieredRewardToggle={handleTieredRewardToggle}
+            onTiersChange={handleTiersChange}
+            isTieredReward={formData.is_tiered_reward}
+            tiers={formData.reward_tiers || []}
+          />
 
           {/* Date Range */}
           <div className="grid grid-cols-2 gap-4">

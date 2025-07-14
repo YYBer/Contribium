@@ -12,10 +12,32 @@ import { supabase } from "@/lib/supabase"
 import { Bounty } from "@/types/supabase"
 import { BountyService } from "@/services/bounty.service"
 import { SubmissionDialog } from '../components/SubmissionDialog'
+import { TieredRewardDisplay } from '../components/TieredRewardDisplay'
 import CommentSection from '../components/CommentSection'
 import LoadingPage from "./LoadingPage"
 import { Link } from "react-router-dom";
 import { toast } from 'react-hot-toast';
+
+// Helper function to generate tiered rewards
+function generateTiers(reward: { amount: number; token: string; usd_equivalent: number }) {
+  const totalAmount = reward.amount
+  
+  // Default tier distribution percentages
+  const tierPercentages = [
+    { position: 1, percentage: 0.4 },   // 40% for 1st place
+    { position: 2, percentage: 0.25 },  // 25% for 2nd place
+    { position: 3, percentage: 0.15 },  // 15% for 3rd place
+    { position: 4, percentage: 0.10 },  // 10% for 4th place
+    { position: 5, percentage: 0.10 },  // 10% for 5th place
+  ]
+  
+  return tierPercentages.map(tier => ({
+    position: tier.position,
+    amount: Math.round(totalAmount * tier.percentage),
+    token: reward.token,
+    usd_equivalent: Math.round(reward.usd_equivalent * tier.percentage)
+  }))
+}
 
 export default function BountyDetails() {
   const { id } = useParams()
@@ -177,47 +199,13 @@ export default function BountyDetails() {
           {/* Sidebar */}
           <aside className="space-y-6">
             <Card className={`bg-theme-primary border-theme-primary`}>
-              <CardContent className="p-4 space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 text-2xl font-bold">
-                    <span className="text-theme-primary">◈</span>
-                    <span className="text-theme-primary">{bounty.reward.amount} {bounty.reward.token}</span>
-                  </div>
-                  <div className={`text-sm text-theme-muted`}>
-                    ${bounty.reward.usd_equivalent} USD
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className={`text-theme-muted`}>Submissions</span>
-                    <span className={`text-theme-primary font-bold`}>
-                      {bounty.current_submissions}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`text-theme-muted`}>Remaining</span>
-                    <div className={`flex items-center gap-2 text-theme-primary`}>
-                      <Clock className="w-4 h-4" />
-                      <span>{timeRemaining()}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button 
-                  variant="outline" 
-                  className={`w-full border-[#C1A461]/20 bg-amber-500 text-gray-900`}
-                  onClick={handleSubmitOpen}
-                >
-                  Submit
-                </Button>
-{/*                 
-                <div className="p-3 bg-[#C1A461]/10 rounded-lg border border-[#C1A461]/20">
-                  <div className={`flex gap-2 text-sm ${textColor}`}>
-                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-1" />
-                    <p>Register first and wait for approval before starting work.</p>
-                  </div>
-                </div> */}
-              </CardContent>
+              <TieredRewardDisplay
+                totalReward={bounty.reward}
+                tiers={bounty.is_tiered_reward && bounty.reward_tiers ? bounty.reward_tiers : generateTiers(bounty.reward)}
+                submissions={bounty.current_submissions}
+                timeRemaining={timeRemaining()}
+                onSubmit={handleSubmitOpen}
+              />
             </Card>
 
             <Card className={`bg-theme-primary border-theme-primary`}>
