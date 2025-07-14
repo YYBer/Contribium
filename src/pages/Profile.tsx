@@ -55,7 +55,7 @@ export default function Profile() {
   })
   const location = useLocation();
   // const shareUrl = `${import.meta.env.VITE_APP_URL}${location.pathname}`;
-  const shareUrl = `http://5173${location.pathname}`; //wait for deploy
+  const shareUrl = `https://contribium.alephium.org/${location.pathname}`; //wait for deploy
   const [submissionsCount, setSubmissionsCount] = useState(0);
   const [submissionsLoading, setSubmissionsLoading] = useState(true);
   // console.log('user',currentUser, profileUser)
