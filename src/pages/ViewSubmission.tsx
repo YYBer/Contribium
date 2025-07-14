@@ -18,7 +18,7 @@ import {
 import { Calendar, MoreVertical, ExternalLink, CheckCircle, XCircle, MessageSquare } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
 import { supabase } from '@/lib/supabase'
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "react-hot-toast"
 import type { BountySubmission, ProjectSubmission, User } from '@/types/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 import { FeedbackDialog } from "../components/FeedbackDialog"
@@ -47,7 +47,7 @@ function getInitials(name: string | null) {
 export function ViewSubmissions({ bountyId, projectId }: SubmissionProps) {
   const { user } = useUser()
   const { theme } = useTheme()
-  const { toast } = useToast()
+  // Using imported toast from react-hot-toast
   const [loading, setLoading] = useState(true)
   const [bountySubmissions, setBountySubmissions] = useState<BountySubmission[]>([])
   const [projectSubmissions, setProjectSubmissions] = useState<ProjectSubmission[]>([])

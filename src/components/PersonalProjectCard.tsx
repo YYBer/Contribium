@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog"
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 
 const skillOptions = {
   frontend: [

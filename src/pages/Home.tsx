@@ -10,7 +10,7 @@ import { MessageSquare, Compass, Anchor, MapPin, Ship } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { Bounty, Status } from '@/types/supabase'
 import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 import { Link } from "react-router-dom";
 
 export default function Home() {

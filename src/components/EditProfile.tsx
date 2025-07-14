@@ -20,7 +20,7 @@ import {
 import { Badge } from '../components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
 import { Checkbox } from '../components/ui/checkbox'
-import { useToast } from '../components/ui/use-toast'
+import { toast } from 'react-hot-toast'
 import { useTheme } from '../contexts/ThemeContext'
 import { Web3Interest, WorkExperience } from '../types/supabase'
 import { useCallback } from 'react'
@@ -162,7 +162,7 @@ const WEB3_INTERESTS = ['DeFi', 'NFTs', 'DAOs', 'GameFi', 'Infrastructure'] as c
 export const EditProfile = () => {
   const navigate = useNavigate()
   const { theme } = useTheme()
-  const { toast } = useToast()
+  // Using imported toast from react-hot-toast
   const { user, refreshUser } = useUser()
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -239,11 +239,7 @@ export const EditProfile = () => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "File size must be less than 5MB",
-          variant: "destructive"
-        })
+        toast.error("File size must be less than 5MB")
         return
       }
       setAvatarFile(file)
@@ -262,11 +258,7 @@ export const EditProfile = () => {
       if (formData.username !== user.username) {
         const isAvailable = await UserService.isUsernameAvailable(formData.username)
         if (!isAvailable) {
-          toast({
-            title: "Error",
-            description: "Username is already taken",
-            variant: "destructive"
-          })
+          toast.error("Username is already taken")
           setIsLoading(false) // Important: Reset loading state
           return
         }
@@ -275,11 +267,7 @@ export const EditProfile = () => {
       if (formData.walletAddress !== user.wallet_address) {
         const isAvailable = await UserService.isWalletAddressAvailable(formData.walletAddress, user.id)
         if (!isAvailable) {
-          toast({
-            title: "Error",
-            description: "Wallet address is already registered",
-            variant: "destructive"
-          })
+          toast.error("Wallet address is already registered")
           setIsLoading(false)
           return
         }
@@ -297,11 +285,7 @@ export const EditProfile = () => {
   
       // Validate required fields before update
       if (!formData.username || !formData.firstName || !formData.lastName || !formData.walletAddress) {
-        toast({
-          title: "Error",
-          description: "Please fill in all required fields",
-          variant: "destructive"
-        })
+        toast.error("Please fill in all required fields")
         setIsLoading(false)
         return
       }
@@ -339,21 +323,14 @@ export const EditProfile = () => {
   
       await refreshUser()
       
-      toast({
-        title: "Success",
-        description: "Profile updated successfully"
-      })
+      toast.success("Profile updated successfully")
   
       // Optional: Navigate away after successful update
       navigate(`/profile/${updatedUser.username}`)
   
     } catch (error) {
       console.error('Error updating profile:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile",
-        variant: "destructive"
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to update profile")
     } finally {
       setIsLoading(false)
     }
@@ -366,11 +343,7 @@ export const EditProfile = () => {
     // Validate file type explicitly
     const validTypes = ['image/jpeg', 'image/png', 'image/gif']
     if (!validTypes.includes(file.type)) {
-      toast({
-        title: "Error",
-        description: "Please upload a valid image file (JPG, PNG, or GIF)",
-        variant: "destructive"
-      })
+      toast.error("Please upload a valid image file (JPG, PNG, or GIF)")
       return
     }
   
@@ -391,11 +364,7 @@ export const EditProfile = () => {
       setAvatarFile(file)
     } catch (error) {
       console.error('Error handling file:', error)
-      toast({
-        title: "Error",
-        description: "Failed to process image. Please try again.",
-        variant: "destructive"
-      })
+      toast.error("Failed to process image. Please try again.")
     }
   }, [toast])
   
@@ -438,11 +407,7 @@ export const EditProfile = () => {
       
     } catch (error) {
       console.error('Error uploading avatar:', error)
-      toast({
-        title: "Error",
-        description: "Failed to upload avatar. Please try again.",
-        variant: "destructive"
-      })
+      toast.error("Failed to upload avatar. Please try again.")
       return null
     }
   }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { toast } from '../components/ui/use-toast'
+import { toast } from 'react-hot-toast'
 
 function useShare() {
   const [isSharing, setIsSharing] = useState(false)
@@ -13,17 +13,11 @@ function useShare() {
           title,
           url
         })
-        toast({
-          description: "Successfully shared!",
-          duration: 2000
-        })
+        toast.success("Successfully shared!")
       } else {
         // Fallback to clipboard
         await navigator.clipboard.writeText(url)
-        toast({
-          description: "Link copied to clipboard!",
-          duration: 2000
-        })
+        toast.success("Link copied to clipboard!")
       }
     } catch (error) {
       // Handle specific errors
@@ -33,20 +27,12 @@ function useShare() {
           return
         }
         if (error.name === 'NotAllowedError') {
-          toast({
-            variant: "destructive",
-            description: "Permission denied for sharing",
-            duration: 3000
-          })
+          toast.error("Permission denied for sharing")
           return
         }
       }
       // Fallback error message
-      toast({
-        variant: "destructive",
-        description: "Failed to share. Please try copying the URL manually.",
-        duration: 3000
-      })
+      toast.error("Failed to share. Please try copying the URL manually.")
     } finally {
       setIsSharing(false)
     }

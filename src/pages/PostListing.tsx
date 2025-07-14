@@ -22,7 +22,7 @@ import {
 import { Info } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/contexts/UserContext'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 import type { BountyInsert, ProjectInsert, Category, Status, Bounty, Project } from '@/types/supabase'
 
 interface FormData {

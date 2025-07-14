@@ -16,7 +16,7 @@ import {
 import { useTheme } from '@/contexts/ThemeContext'
 import { useUser } from '@/contexts/UserContext'
 import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 import type { BountySubmission } from '@/types/supabase'
 
 type SubmissionStatus = 'all' | 'submitted' | 'accepted' | 'rejected'

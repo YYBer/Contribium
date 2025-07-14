@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ExternalLink, Twitter, Github, MessageSquare, Globe, CircleDollarSign, BarChart3 } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 import type { Sponsor, Bounty } from '@/types/supabase'
 
 export default function SponsorProfile() {
@@ -23,6 +23,11 @@ export default function SponsorProfile() {
 
   useEffect(() => {
     const fetchSponsorData = async () => {
+      if (!id) {
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
         
@@ -34,7 +39,7 @@ export default function SponsorProfile() {
           .single()
 
         if (sponsorError) throw sponsorError
-        setSponsor(sponsorData)
+        setSponsor(sponsorData as unknown as Sponsor)
 
         // Fetch bounties
         const { data: bountiesData, error: bountiesError } = await supabase
@@ -44,7 +49,7 @@ export default function SponsorProfile() {
           .order('created_at', { ascending: false })
 
         if (bountiesError) throw bountiesError
-        setBounties(bountiesData || [])
+        setBounties((bountiesData || []) as unknown as Bounty[])
 
       } catch (error) {
         console.error('Error fetching sponsor data:', error)
@@ -54,9 +59,7 @@ export default function SponsorProfile() {
       }
     }
 
-    if (id) {
-      fetchSponsorData()
-    }
+    fetchSponsorData()
   }, [id])
 
   const formatCurrency = (amount: number) => {

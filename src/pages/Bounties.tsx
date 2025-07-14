@@ -8,7 +8,7 @@ import { MessageSquare, Compass, Search, Anchor, MapPin, Ship, Filter } from 'lu
 import { useTheme } from '@/contexts/ThemeContext'
 import { Bounty, Status } from '@/types/supabase'
 import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
 import { Link } from 'react-router-dom';
 

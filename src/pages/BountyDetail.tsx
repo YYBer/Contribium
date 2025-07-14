@@ -47,6 +47,7 @@ export default function BountyDetails() {
   const [bounty, setBounty] = useState<Bounty | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
 
   // Fetch bounty data including sponsor details
@@ -67,6 +68,9 @@ export default function BountyDetails() {
           .single()
 
         if (error) throw error
+        
+        // Reset image error state when new bounty loads
+        setImageError(false)
         
         // Verify sponsor data is available
         if (!data.sponsor) {
@@ -243,34 +247,36 @@ export default function BountyDetails() {
           {/* Main Content */}
           <div className="space-y-6">
             <div className="flex items-center">
-              {bounty.sponsor ? (
+              {bounty.sponsor && (
+                (bounty.sponsor.profile_photos && bounty.sponsor.profile_photos.length > 0) ||
+                bounty.sponsor.logo_url
+              ) && !imageError ? (
                 <img 
                   className="mr-2 h-12 w-12 rounded-md object-cover md:h-16 md:w-16" 
                   alt={bounty.sponsor.name || 'Sponsor'} 
                   src={
-                    (bounty.sponsor.profile_photos && bounty.sponsor.profile_photos.length > 0 
+                    bounty.sponsor.profile_photos && bounty.sponsor.profile_photos.length > 0 
                       ? bounty.sponsor.profile_photos[0] 
-                      : bounty.sponsor.logo_url || `https://via.placeholder.com/64?text=${bounty.sponsor.name?.charAt(0) || 'S'}`
-                    )
+                      : bounty.sponsor.logo_url || ''
                   }
-                  onError={(e) => {
-                    e.currentTarget.src = `https://via.placeholder.com/64?text=${bounty.sponsor?.name?.charAt(0) || 'S'}`
-                  }}
+                  onError={() => setImageError(true)}
                 />
               ) : (
                 <div className="mr-2 h-12 w-12 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center md:h-16 md:w-16">
-                  <span className="text-gray-500 font-semibold">S</span>
+                  <span className="text-gray-500 dark:text-gray-300 font-semibold">
+                    {bounty.sponsor?.name?.charAt(0) || 'S'}
+                  </span>
                 </div>
               )}
               <div className="flex flex-col items-start gap-1">
                 <div className="flex gap-1">
                   <div className="flex md:hidden">
-                    <h1 className="text-lg font-semibold tracking-tight text-slate-700 dark:text-slate-300">
+                    <h1 className="text-lg font-semibold tracking-tight text-slate-700 dark:text-[#C1A461]">
                       {bounty.title}
                     </h1>
                   </div>
                   <div className="hidden md:flex">
-                    <h1 className="text-lg font-semibold tracking-tight text-slate-700 dark:text-slate-300 sm:text-xl">
+                    <h1 className="text-lg font-semibold tracking-tight text-slate-700 dark:text-[#C1A461] sm:text-xl">
                       {bounty.title}
                     </h1>
                   </div>

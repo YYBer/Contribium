@@ -127,10 +127,10 @@ export function TieredRewardDisplay({
 
       {/* Submit Button */}
       <Button 
-        className="w-full border-[#C1A461]/20 bg-amber-500 hover:bg-amber-600 text-gray-900"
+        className="w-full border-[#C1A461]/20 bg-amber-500 hover:bg-amber-600 text-gray-900 dark:text-[#1B2228]"
         onClick={onSubmit}
       >
-        Submit Entry
+        Submit
       </Button>
     </div>
   )

@@ -66,32 +66,33 @@ export default function SponsorDashboard() {
           .single()
 
         if (sponsorError) throw sponsorError
-        setSponsor(sponsorData)
+        const sponsor = sponsorData as unknown as Sponsor
+        setSponsor(sponsor)
 
         // Fetch bounties
         const { data: bountiesData, error: bountiesError } = await supabase
           .from('bounties')
           .select('*')
-          .eq('sponsor_id', sponsorData.id)
+          .eq('sponsor_id', sponsor.id)
           .order('created_at', { ascending: false })
 
         if (bountiesError) throw bountiesError
-        setBounties(bountiesData || [])
+        setBounties((bountiesData || []) as unknown as Bounty[])
 
         // Fetch all submissions for this sponsor
         try {
           const { data: submissionsData, error: submissionsError } = await supabase
             .from('bounty_submissions')
             .select('*')
-            .eq('sponsor_id', sponsorData.id)  // Use sponsor_id directly
+            .eq('sponsor_id', sponsor.id)  // Use sponsor_id directly
             .order('created_at', { ascending: false })
             
           if (submissionsError) {
             console.error('Error fetching submissions:', submissionsError)
             setAllSubmissions([])
           } else {
-            console.log(`Found ${submissionsData?.length || 0} total submissions for sponsor ${sponsorData.id}`)
-            setAllSubmissions(submissionsData || [])
+            console.log(`Found ${submissionsData?.length || 0} total submissions for sponsor ${sponsor.id}`)
+            setAllSubmissions((submissionsData || []) as unknown as BountySubmission[])
           }
         } catch (error) {
           console.error('Error processing submissions:', error)
@@ -128,7 +129,7 @@ export default function SponsorDashboard() {
       } else {
         console.log(`Found ${data?.length || 0} submissions for bounty ${bountyId}`)
         // Data already contains user information in columns
-        setSubmissions(data || [])
+        setSubmissions((data || []) as unknown as BountySubmission[])
       }
     } catch (error) {
       console.error('Error fetching submissions:', error)
@@ -214,7 +215,7 @@ export default function SponsorDashboard() {
         .single();
 
       if (!refreshError && refreshedData) {
-        const updatedSubmission = refreshedData;
+        const updatedSubmission = refreshedData as unknown as BountySubmission;
         
         setSubmissions(prev => 
           prev.map(sub => 
@@ -270,7 +271,7 @@ export default function SponsorDashboard() {
   }
 
   // Handle sponsor profile updates
-  const handleProfileUpdate = (updatedData: Partial<typeof sponsor>) => {
+  const handleProfileUpdate = (updatedData: Partial<Sponsor>) => {
     if (sponsor) {
       console.log('handleProfileUpdate - Current sponsor:', sponsor)
       console.log('handleProfileUpdate - Update data:', updatedData)
@@ -428,7 +429,7 @@ export default function SponsorDashboard() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setSubmissions(data || [])
+      setSubmissions((data || []) as unknown as BountySubmission[])
     } catch (error) {
       console.error('Error refreshing submissions:', error)
     }
@@ -522,7 +523,7 @@ export default function SponsorDashboard() {
                   <CircleDollarSign className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">Total Bounties</p>
+                  <p className="text-theme-muted font-medium">Total Bounties</p>
                   <h3 className="text-3xl font-bold text-sponsor-secondary">
                     {sponsor.total_bounties_count}
                   </h3>
@@ -538,7 +539,7 @@ export default function SponsorDashboard() {
                   <BarChart3 className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">Total Projects</p>
+                  <p className="text-theme-muted font-medium">Total Projects</p>
                   <h3 className="text-3xl font-bold text-sponsor-secondary">
                     {sponsor.total_projects_count}
                   </h3>
@@ -554,7 +555,7 @@ export default function SponsorDashboard() {
                   <CircleDollarSign className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">Total Rewards</p>
+                  <p className="text-theme-muted font-medium">Total Rewards</p>
                   <h3 className="text-3xl font-bold text-sponsor-secondary">
                     ${sponsor.total_reward_amount.toLocaleString()}
                   </h3>
@@ -569,19 +570,19 @@ export default function SponsorDashboard() {
           <TabsList className="bg-white dark:bg-gray-800 border-b border-sponsor-primary/20 dark:border-gray-600 w-full justify-start rounded-none p-0 h-auto shadow-sm">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 dark:text-gray-300 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="bounties"
-              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 dark:text-gray-300 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Bounties
             </TabsTrigger>
             <TabsTrigger
               value="submissions"
-              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-gray-600 dark:text-gray-300 data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
+              className="rounded-none border-b-3 border-transparent data-[state=active]:border-sponsor-primary data-[state=active]:bg-transparent text-theme-muted data-[state=active]:text-sponsor-primary px-6 py-4 font-medium"
             >
               Submissions
             </TabsTrigger>
@@ -607,12 +608,12 @@ export default function SponsorDashboard() {
               <CardContent className="p-4 space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Description</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">{sponsor.description || 'No description provided'}</p>
+                    <h4 className="font-medium text-theme-secondary mb-1">Description</h4>
+                    <p className="text-theme-muted text-sm">{sponsor.description || 'No description provided'}</p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Website</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    <h4 className="font-medium text-theme-secondary mb-1">Website</h4>
+                    <p className="text-theme-muted text-sm">
                       {sponsor.website_url ? (
                         <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer" className="text-sponsor-primary hover:underline">
                           {sponsor.website_url}
@@ -623,8 +624,8 @@ export default function SponsorDashboard() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Twitter</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    <h4 className="font-medium text-theme-secondary mb-1">Twitter</h4>
+                    <p className="text-theme-muted text-sm">
                       {sponsor.twitter_handle ? (
                         <a href={`https://twitter.com/${sponsor.twitter_handle.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-sponsor-primary hover:underline">
                           {sponsor.twitter_handle}
@@ -635,8 +636,8 @@ export default function SponsorDashboard() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-700 dark:text-gray-200 mb-1">Profile Picture</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">{sponsor.profile_photos?.length ? 'Uploaded' : 'Not uploaded'}</p>
+                    <h4 className="font-medium text-theme-secondary mb-1">Profile Picture</h4>
+                    <p className="text-theme-muted text-sm">{sponsor.profile_photos?.length ? 'Uploaded' : 'Not uploaded'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -685,7 +686,7 @@ export default function SponsorDashboard() {
                 </CardHeader>
                 <CardContent>
                   {bounties.length === 0 ? (
-                    <p className="text-gray-600 dark:text-gray-300">No bounties found</p>
+                    <p className="text-theme-muted">No bounties found</p>
                   ) : (
                     <div className="space-y-4">
                       {bounties.slice(0, 5).map((bounty) => (
@@ -707,7 +708,7 @@ export default function SponsorDashboard() {
                                 >
                                   {bounty.status}
                                 </Badge>
-                                <span className="text-sm text-gray-600 dark:text-gray-300">
+                                <span className="text-sm text-theme-muted">
                                   {bounty.current_submissions} submissions
                                 </span>
                               </div>
@@ -748,7 +749,7 @@ export default function SponsorDashboard() {
                 </CardHeader>
                 <CardContent>
                   {allSubmissions.length === 0 ? (
-                    <p className="text-gray-600 dark:text-gray-300">No submissions found</p>
+                    <p className="text-theme-muted">No submissions found</p>
                   ) : (
                     <div className="space-y-4">
                       {allSubmissions.slice(0, 5).map((submission) => (
@@ -757,7 +758,6 @@ export default function SponsorDashboard() {
                           className="p-4 border border-sponsor-primary/20 rounded-lg cursor-pointer hover:border-sponsor-accent hover:bg-sponsor-accent/5 transition-all duration-200 relative"
                           onClick={() => viewSubmission(submission)}
                         >
-                          <div className="flex justify-between items-start">
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-3">
                               <Avatar className="w-10 h-10">
@@ -770,12 +770,11 @@ export default function SponsorDashboard() {
                                 <h3 className="font-medium text-sponsor-secondary">
                                   {submission.user_username || 'Anonymous User'}
                                 </h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                <p className="text-sm text-theme-muted">
                                   {getBountyTitle(submission.bounty_id)}
                                 </p>
                               </div>
                             </div>
-                          </div>
                             <Badge 
                               variant="outline" 
                               className={getStatusBadgeClass(submission.status)}
@@ -935,7 +934,7 @@ export default function SponsorDashboard() {
                                   >
                                     {submission.status}
                                   </Badge>
-                                  {submission.transaction_hash && (
+                                  {submission.status === 'accepted' && submission.transaction_hash && (
                                     <Badge variant="outline" className="bg-green-500/10 text-green-500">
                                       Paid
                                     </Badge>
@@ -1034,7 +1033,7 @@ export default function SponsorDashboard() {
                                   >
                                     {submission.status}
                                   </Badge>
-                                  {submission.transaction_hash && (
+                                  {submission.status === 'accepted' && submission.transaction_hash && (
                                     <Badge variant="outline" className="bg-green-500/10 text-green-500">
                                       Paid
                                     </Badge>
