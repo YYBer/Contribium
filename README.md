@@ -149,8 +149,9 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ## 💡 Getting Started
 
-1. **For Users**: Sign up with Google/GitHub → Complete profile → Browse bounties → Submit solutions
+1. **For Users**: Sign up with Google/GitHub → Complete profile → Browse bounties → Submit solutions 
 2. **For Sponsors**: Sign up → Create sponsor profile → Post bounties → Review submissions → Distribute rewards
+3. **How to check my submission**: Sign up → Profile → My Submissions
 
 ## 🔒 Security & Privacy
 
