@@ -55,7 +55,8 @@ export default function Profile() {
   })
   const location = useLocation();
   // const shareUrl = `${import.meta.env.VITE_APP_URL}${location.pathname}`;
-  const shareUrl = `http://5173${location.pathname}`; //wait for deploy
+  const shareUrl = `https://contribium.alephium.org$
+  {location.pathname}`; //wait for deploy
   const [submissionsCount, setSubmissionsCount] = useState(0);
   const [submissionsLoading, setSubmissionsLoading] = useState(true);
   // console.log('user',currentUser, profileUser)
@@ -133,17 +134,17 @@ export default function Profile() {
           throw new Error('User not found')
         }
   
-        setProfileUser(userData)
+        setProfileUser(userData as unknown as User)
   
         // Fetch projects after setting user
         const { data: projectsData, error: projectsError } = await supabase
           .from('proof_of_work')
           .select('*')
-          .eq('user_id', userData.id)
+          .eq('user_id', (userData as unknown as User).id)
           .order('created_at', { ascending: false })
   
         if (projectsError) throw projectsError
-        setProjects(projectsData || [])
+        setProjects((projectsData as unknown as ProofOfWork[]) || [])
   
       } catch (err: any) {
         console.error('Profile error:', err)
@@ -706,11 +707,11 @@ export default function Profile() {
                           const { data: updatedProofs } = await supabase
                             .from('proof_of_work')
                             .select('*')
-                            .eq('user_id', currentUser?.id)
+                            .eq('user_id', currentUser?.id!)
                             .order('created_at', { ascending: false })
 
                           if (updatedProofs) {
-                            setProjects(updatedProofs)
+                            setProjects(updatedProofs as unknown as ProofOfWork[])
                           }
 
                           toast.success("Project added successfully!")
