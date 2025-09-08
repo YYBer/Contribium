@@ -198,7 +198,7 @@ export default function SponsorProfile() {
                       variant="outline" 
                       size="sm"
                       className="btn-sponsor-outline-accent"
-                      onClick={() => window.open(`https://twitter.com/${sponsor.twitter_handle}`, '_blank')}
+                      onClick={() => window.open(`https://x.com/${sponsor.twitter_handle}`, '_blank')}
                     >
                       <Twitter className="w-4 h-4 mr-2" />
                       Twitter
@@ -487,7 +487,7 @@ export default function SponsorProfile() {
                         <div>
                           <p className="text-sponsor-primary font-medium">Twitter</p>
                           <a 
-                            href={`https://twitter.com/${sponsor.twitter_handle}`}
+                            href={`https://x.com/${sponsor.twitter_handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-gray-600 hover:text-sponsor-accent flex items-center gap-1 transition-colors"

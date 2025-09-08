@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Check, CheckCheck, Trash2, X } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, X, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { NotificationService } from '../services/notification.service';
 import { Notification, NotificationType } from '../types/supabase';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface NotificationDropdownProps {
   user: any;
@@ -12,6 +13,7 @@ interface NotificationDropdownProps {
 }
 
 const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -90,6 +92,69 @@ const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
     }
   };
 
+  // Handle notification click and navigation
+  const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if not already read
+    if (!notification.is_read) {
+      await markAsRead(notification.id);
+    }
+
+    // Navigate based on notification type and related data
+    let navigationPath = '';
+    
+    switch (notification.type) {
+      case 'comment_reply':
+      case 'bounty_comment':
+        // Navigate to bounty details page where comments are displayed
+        if (notification.related_bounty_id) {
+          navigationPath = `/bounty/${notification.related_bounty_id}`;
+        }
+        break;
+        
+      case 'submission_accepted':
+      case 'submission_rejected':
+        // Navigate to bounty details page
+        if (notification.related_bounty_id) {
+          navigationPath = `/bounty/${notification.related_bounty_id}`;
+        }
+        break;
+        
+      case 'bounty_completed':
+        // Navigate to bounty details page  
+        if (notification.related_bounty_id) {
+          navigationPath = `/bounty/${notification.related_bounty_id}`;
+        }
+        break;
+        
+      default:
+        // Fallback navigation
+        if (notification.related_bounty_id) {
+          navigationPath = `/bounty/${notification.related_bounty_id}`;
+        } else if (notification.related_submission_id) {
+          navigationPath = `/mysubmission`;
+        }
+    }
+
+    // Close dropdown and navigate
+    setIsOpen(false);
+    
+    if (navigationPath) {
+      navigate(navigationPath);
+      // Add a small delay and scroll to comments section if it's a comment notification
+      if (notification.type === 'comment_reply' || notification.type === 'bounty_comment') {
+        setTimeout(() => {
+          const commentsSection = document.querySelector('[data-comments-section]');
+          if (commentsSection) {
+            commentsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      }
+    } else {
+      // If no specific navigation available, show a message
+      toast.info('No direct link available for this notification');
+    }
+  };
+
   // Get notification icon based on type
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -101,6 +166,10 @@ const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
         return '✅';
       case 'comment_reply':
         return '💬';
+      case 'bounty_comment':
+        return '💬';
+      case 'sponsor_comment':
+        return '👑';
       default:
         return '📢';
     }
@@ -226,7 +295,8 @@ const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 ${hoverBgColor} ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''} group`}
+                    className={`p-4 ${hoverBgColor} ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''} group cursor-pointer transition-colors`}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-lg flex-shrink-0">
@@ -234,15 +304,23 @@ const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
-                          <h4 className={`font-medium text-sm ${textColor} ${!notification.is_read ? 'font-semibold' : ''}`}>
-                            {notification.title}
-                          </h4>
+                          <div className="flex items-center gap-2 flex-1">
+                            <h4 className={`font-medium text-sm ${textColor} ${!notification.is_read ? 'font-semibold' : ''}`}>
+                              {notification.title}
+                            </h4>
+                            {(notification.related_bounty_id || notification.related_submission_id) && (
+                              <ExternalLink className={`h-3 w-3 ${mutedTextColor} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                            )}
+                          </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {!notification.is_read && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => markAsRead(notification.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsRead(notification.id);
+                                }}
                                 className={`${mutedTextColor} hover:${textColor} p-1`}
                                 title="Mark as read"
                               >
@@ -252,7 +330,10 @@ const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deleteNotification(notification.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotification(notification.id);
+                              }}
                               className={`${mutedTextColor} hover:text-red-500 p-1`}
                               title="Delete notification"
                             >
@@ -260,16 +341,39 @@ const NotificationDropdown = ({ user, theme }: NotificationDropdownProps) => {
                             </Button>
                           </div>
                         </div>
-                        <p className={`text-sm ${mutedTextColor} mt-1 line-clamp-2`}>
-                          {notification.message}
-                        </p>
+                        <div className={`text-sm ${mutedTextColor} mt-1`}>
+                          {/* Show comment content preview for comment notifications */}
+                          {(notification.type === 'comment_reply' || notification.type === 'bounty_comment' || notification.type === 'sponsor_comment') ? (
+                            <div className="space-y-1">
+                              <p className="line-clamp-1 font-medium text-xs uppercase tracking-wide opacity-75">
+                                {notification.type === 'sponsor_comment' ? 'Sponsor Comment' : 'Comment'}
+                              </p>
+                              <p className="line-clamp-2 bg-gray-50 dark:bg-gray-800 rounded px-2 py-1 italic">
+                                "{notification.message}"
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="line-clamp-2">
+                              {notification.message}
+                            </p>
+                          )}
+                        </div>
                         <div className="flex justify-between items-center mt-2">
                           <span className={`text-xs ${mutedTextColor}`}>
                             {formatDate(notification.created_at)}
                           </span>
-                          {!notification.is_read && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {(notification.related_bounty_id || notification.related_submission_id) && (
+                              <span className={`text-xs ${mutedTextColor} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                {notification.type === 'comment_reply' || notification.type === 'bounty_comment' || notification.type === 'sponsor_comment' 
+                                  ? 'Click to view comment' 
+                                  : 'Click to view details'}
+                              </span>
+                            )}
+                            {!notification.is_read && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

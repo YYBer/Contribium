@@ -492,6 +492,9 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
         user.id,
         commentContent
       );
+
+      // If this is a sponsor commenting, we could create notifications for interested users
+      // This would typically be handled by database triggers or backend logic
       
       // Replace the optimistic comment with the real one
       setComments(prev => 
@@ -706,7 +709,7 @@ const CommentSection = ({ bountyId, sponsorId, user, theme }: CommentSectionProp
   };
 
   return (
-    <section>
+    <section data-comments-section>
       <div className={`flex items-center gap-2 mb-4 ${textColor}`}>
         <MessageSquare className="w-5 h-5" />
         <h2 className="text-lg font-bold">Discussion ({comments.length})</h2>
