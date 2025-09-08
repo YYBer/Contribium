@@ -110,8 +110,9 @@ export default function Home() {
     }
   }, [fetchBounties])
     
-      // Add debug function to test bounty fetching
-      ;(window as any).testBountyFetch = fetchBounties
+  useEffect(() => {
+    // Add debug function to test bounty fetching
+    ;(window as any).testBountyFetch = fetchBounties
   }, [selectedStatus])
 
   const getInitials = (name: string | null) => {

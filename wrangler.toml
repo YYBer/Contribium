@@ -1,0 +1,10 @@
+name = "contribium"
+compatibility_date = "2024-01-15"
+
+[env.production]
+name = "contribium"
+route = "contribium.alephium.org/*"
+
+[[env.production.routes]]
+pattern = "contribium.alephium.org/*"
+zone_name = "alephium.org"

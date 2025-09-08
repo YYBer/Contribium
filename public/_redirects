@@ -1,0 +1,13 @@
+# Redirects for client-side routing
+/*    /index.html   200
+
+# API redirects (if you have any backend endpoints)
+/api/*  https://wawxluhjdnqewiaexvvk.supabase.co/rest/v1/:splat  200
+
+# Security headers
+/*  /   200!
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
