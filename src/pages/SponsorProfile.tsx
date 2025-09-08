@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,12 +14,42 @@ import type { Sponsor, Bounty } from '@/types/supabase'
 export default function SponsorProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { theme } = useTheme()
   const [sponsor, setSponsor] = useState<Sponsor | null>(null)
   const [bounties, setBounties] = useState<Bounty[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'bounties' | 'about'>('bounties')
+  const [activeTab, setActiveTab] = useState<'bounties' | 'about'>(() => {
+    const tab = searchParams.get('tab')
+    return (tab === 'about' || tab === 'bounties') ? tab : 'bounties'
+  })
 
+
+  // Handle tab changes and sync with URL
+  const handleTabChange = (newTab: 'bounties' | 'about') => {
+    setActiveTab(newTab)
+    const newSearchParams = new URLSearchParams(searchParams)
+    newSearchParams.set('tab', newTab)
+    setSearchParams(newSearchParams, { replace: true })
+  }
+
+  // Sync tab state with URL changes (e.g., browser back/forward)
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    const validTab = (tab === 'about' || tab === 'bounties') ? tab : 'bounties'
+    if (validTab !== activeTab) {
+      setActiveTab(validTab)
+    }
+  }, [searchParams, activeTab])
+
+  // Reset state when component unmounts or id changes
+  useEffect(() => {
+    return () => {
+      setSponsor(null)
+      setBounties([])
+      setLoading(true)
+    }
+  }, [id])
 
   useEffect(() => {
     const fetchSponsorData = async () => {
@@ -30,6 +60,10 @@ export default function SponsorProfile() {
 
       try {
         setLoading(true)
+        
+        // Reset state before fetching
+        setSponsor(null)
+        setBounties([])
         
         // Fetch sponsor profile
         const { data: sponsorData, error: sponsorError } = await supabase
@@ -54,6 +88,9 @@ export default function SponsorProfile() {
       } catch (error) {
         console.error('Error fetching sponsor data:', error)
         toast.error('Failed to load sponsor profile')
+        // Reset state on error
+        setSponsor(null)
+        setBounties([])
       } finally {
         setLoading(false)
       }
@@ -293,7 +330,7 @@ export default function SponsorProfile() {
           </div>
 
           {/* Tabs for Content */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'bounties' | 'about')}>
+          <Tabs value={activeTab} onValueChange={(v) => handleTabChange(v as 'bounties' | 'about')}>
             <TabsList className="bg-white border-b border-sponsor-primary/20 w-full justify-start rounded-none p-0 h-auto shadow-sm">
               <TabsTrigger
                 value="bounties"

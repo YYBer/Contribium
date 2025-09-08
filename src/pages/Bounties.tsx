@@ -22,32 +22,56 @@ export function Bounties() {
   const [selectedStatus, setSelectedStatus] = useState<Status>('open')
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Memoized fetch function to prevent unnecessary re-renders
+  const fetchBounties = useCallback(async () => {
+    try {
+      setLoading(true)
+      
+      // Clear existing bounties before fetching
+      setBounties([])
+      
+      const { data, error } = await supabase
+        .from('bounties')
+        .select(`
+          *,
+          sponsor:sponsors(id, name, is_verified)
+        `)
+        .eq('status', selectedStatus)
+        .order('created_at', { ascending: false })
 
+      if (error) throw error
+      setBounties(data || [])
+    } catch (error) {
+      console.error('Error fetching bounties:', error)
+      toast.error('Failed to load bounties')
+      setBounties([]) // Reset bounties on error
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedStatus])
+
+  // Refetch data when component mounts or status changes
   useEffect(() => {
-    const fetchBounties = async () => {
-      try {
-        setLoading(true)
-        const { data, error } = await supabase
-          .from('bounties')
-          .select(`
-            *,
-            sponsor:sponsors(id, name, is_verified)
-          `)
-          .eq('status', selectedStatus)
-          .order('created_at', { ascending: false })
+    fetchBounties()
+  }, [fetchBounties])
 
-        if (error) throw error
-        setBounties(data || [])
-      } catch (error) {
-        console.error('Error fetching bounties:', error)
-        toast.error('Failed to load bounties')
-      } finally {
-        setLoading(false)
+  // Refetch data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refetch data when the page becomes visible again
+      if (!document.hidden) {
+        fetchBounties()
       }
     }
 
-    fetchBounties()
-  }, [selectedStatus])
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
+  }, [fetchBounties])
 
   const categoryFilters = ["All", "Content", "Design", "Development", "Other"]
 

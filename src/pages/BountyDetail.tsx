@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useState, useEffect, useCallback } from "react"
+import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -42,6 +42,7 @@ function generateTiers(reward: { amount: number; token: string; usd_equivalent: 
 export default function BountyDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { theme } = useTheme()
   const { user } = useUser()
   const [bounty, setBounty] = useState<Bounty | null>(null)
@@ -49,50 +50,81 @@ export default function BountyDetails() {
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false)
   const [imageError, setImageError] = useState(false)
 
+  // Cleanup function to reset state when component unmounts or id changes
+  useEffect(() => {
+    return () => {
+      setBounty(null)
+      setLoading(true)
+      setImageError(false)
+      setIsSubmitDialogOpen(false)
+    }
+  }, [id])
+
+  // Memoized fetch function to prevent unnecessary re-renders
+  const fetchBounty = useCallback(async () => {
+    if (!id) return
+    
+    try {
+      setLoading(true)
+      
+      // Reset state before fetching
+      setBounty(null)
+      setImageError(false)
+      
+      // Make sure to fetch sponsor details by using the join syntax
+      const { data, error } = await supabase
+        .from('bounties')
+        .select(`
+          *,
+          sponsor:sponsors(*)
+        `)
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      
+      // Verify sponsor data is available
+      if (!data.sponsor) {
+        console.warn('Sponsor data not retrieved with bounty:', data.id)
+      }
+      
+      setBounty(data)
+    } catch (error) {
+      console.error('Error fetching bounty:', error)
+      toast.error("Failed to load bounty details")
+      setBounty(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
 
   // Fetch bounty data including sponsor details
   useEffect(() => {
-    const fetchBounty = async () => {
-      if (!id) return
-      
-      try {
-        setLoading(true)
-        // Make sure to fetch sponsor details by using the join syntax
-        const { data, error } = await supabase
-          .from('bounties')
-          .select(`
-            *,
-            sponsor:sponsors(*)
-          `)
-          .eq('id', id)
-          .single()
-
-        if (error) throw error
-        
-        // Reset image error state when new bounty loads
-        setImageError(false)
-        
-        // Verify sponsor data is available
-        if (!data.sponsor) {
-          console.warn('Sponsor data not retrieved with bounty:', data.id)
-        }
-        
-        setBounty(data)
-      } catch (error) {
-        console.error('Error fetching bounty:', error)
-        toast.error("Failed to load bounty details")
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchBounty()
     
     // Add debug function to window for testing
     if (id) {
       (window as any).debugSubmissionCount = () => BountyService.debugSubmissionCount(id)
     }
-  }, [id])
+  }, [fetchBounty, id])
+
+  // Refetch data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refetch data when the page becomes visible again
+      if (!document.hidden && id) {
+        fetchBounty()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
+  }, [fetchBounty])
 
   const handleSubmitOpen = () => {
     if (!user) {

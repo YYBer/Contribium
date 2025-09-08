@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
 import { Button } from "../components/ui/button"
@@ -87,74 +87,112 @@ export default function Profile() {
     }
   }
 
+  // Cleanup function to reset state when component unmounts or username changes
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+    return () => {
+      setProfileUser(null)
+      setProjects([])
+      setLoading(true)
+      setError(null)
+      setSubmissionsCount(0)
+      setSubmissionsLoading(true)
+    }
+  }, [username])
 
-        if (!username && currentUser) {
-          setProfileUser(currentUser)
-          navigate(`/profile/${currentUser.username}`, { replace: true })
-          setLoading(false)
-          return
-        }
-  
-        const usernameToFetch = username || currentUser?.username
-        
-        console.log('Profile fetch debug:', {
-          urlUsername: username,
-          currentUserUsername: currentUser?.username,
-          usernameToFetch: usernameToFetch
-        })
-  
-        if (!usernameToFetch) {
-          throw new Error('No username provided')
-        }
-  
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('username', usernameToFetch)
-          .single()
-  
-        console.log('User lookup result:', {
-          username: usernameToFetch,
-          userData: userData,
-          error: userError
-        })
-  
-        if (userError) {
-          console.error('Supabase error:', userError)
-          throw userError
-        }
-  
-        if (!userData) {
-          throw new Error('User not found')
-        }
-  
-        setProfileUser(userData as unknown as User)
-  
-        // Fetch projects after setting user
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('proof_of_work')
-          .select('*')
-          .eq('user_id', (userData as unknown as User).id)
-          .order('created_at', { ascending: false })
-  
-        if (projectsError) throw projectsError
-        setProjects((projectsData as unknown as ProofOfWork[]) || [])
-  
-      } catch (err: any) {
-        console.error('Profile error:', err)
-        setError(err.message || 'An error occurred')
-      } finally {
+  // Memoized fetch function for profile data
+  const fetchProfileData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Reset state before fetching
+      setProfileUser(null)
+      setProjects([])
+
+      if (!username && currentUser) {
+        setProfileUser(currentUser)
+        navigate(`/profile/${currentUser.username}`, { replace: true })
         setLoading(false)
+        return
+      }
+
+      const usernameToFetch = username || currentUser?.username
+      
+      console.log('Profile fetch debug:', {
+        urlUsername: username,
+        currentUserUsername: currentUser?.username,
+        usernameToFetch: usernameToFetch
+      })
+
+      if (!usernameToFetch) {
+        throw new Error('No username provided')
+      }
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', usernameToFetch)
+        .single()
+
+      console.log('User lookup result:', {
+        username: usernameToFetch,
+        userData: userData,
+        error: userError
+      })
+
+      if (userError) {
+        console.error('Supabase error:', userError)
+        throw userError
+      }
+
+      if (!userData) {
+        throw new Error('User not found')
+      }
+
+      setProfileUser(userData as unknown as User)
+
+      // Fetch projects after setting user
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('proof_of_work')
+        .select('*')
+        .eq('user_id', (userData as unknown as User).id)
+        .order('created_at', { ascending: false })
+
+      if (projectsError) throw projectsError
+      setProjects((projectsData as unknown as ProofOfWork[]) || [])
+
+    } catch (err: any) {
+      console.error('Profile error:', err)
+      setError(err.message || 'An error occurred')
+      // Reset state on error
+      setProfileUser(null)
+      setProjects([])
+    } finally {
+      setLoading(false)
+    }
+  }, [username, currentUser, navigate])
+
+  useEffect(() => {
+    fetchProfileData()
+  }, [fetchProfileData])
+
+  // Refetch data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refetch data when the page becomes visible again
+      if (!document.hidden && username) {
+        fetchProfileData()
       }
     }
-  
-    fetchProfileData()
-  }, [username, currentUser])
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
+  }, [fetchProfileData])
 
   // Add debug functions to window for testing username lookup
   useEffect(() => {

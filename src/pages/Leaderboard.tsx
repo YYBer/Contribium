@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -26,32 +26,85 @@ export default function Leaderboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('all')
 
 
+  // Cleanup function to reset state when component unmounts
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const [leaderboardData, statsData] = await Promise.all([
-          LeaderboardService.getLeaderboard(50),
-          LeaderboardService.getLeaderboardStats()
-        ])
-        
-        setLeaderboard(leaderboardData)
-        setStats(statsData)
-        
-        // Get current user's rank if logged in
-        if (user) {
-          const rank = await LeaderboardService.getUserRank(user.id)
-          setUserRank(rank)
-        }
-      } catch (error) {
-        console.error('Error fetching leaderboard data:', error)
-      } finally {
-        setLoading(false)
+    return () => {
+      setLeaderboard([])
+      setStats({
+        totalUsers: 0,
+        totalSubmissions: 0,
+        totalEarnings: 0,
+        activeUsers: 0
+      })
+      setLoading(true)
+      setUserRank(0)
+    }
+  }, [])
+
+  // Memoized fetch function
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      
+      // Reset state before fetching
+      setLeaderboard([])
+      setStats({
+        totalUsers: 0,
+        totalSubmissions: 0,
+        totalEarnings: 0,
+        activeUsers: 0
+      })
+      setUserRank(0)
+      
+      const [leaderboardData, statsData] = await Promise.all([
+        LeaderboardService.getLeaderboard(50),
+        LeaderboardService.getLeaderboardStats()
+      ])
+      
+      setLeaderboard(leaderboardData)
+      setStats(statsData)
+      
+      // Get current user's rank if logged in
+      if (user) {
+        const rank = await LeaderboardService.getUserRank(user.id)
+        setUserRank(rank)
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard data:', error)
+      // Reset state on error
+      setLeaderboard([])
+      setStats({
+        totalUsers: 0,
+        totalSubmissions: 0,
+        totalEarnings: 0,
+        activeUsers: 0
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [user])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Refetch data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refetch data when the page becomes visible again
+      if (!document.hidden) {
+        fetchData()
       }
     }
 
-    fetchData()
-  }, [user])
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
+  }, [fetchData])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

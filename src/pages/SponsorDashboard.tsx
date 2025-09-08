@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useCallback } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -28,6 +28,7 @@ import { ProfilePictureManager } from '../components/ProfilePictureManager'
 
 export default function SponsorDashboard() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { theme } = useTheme()
   const { user } = useUser()
   
@@ -39,7 +40,10 @@ export default function SponsorDashboard() {
   const [submissions, setSubmissions] = useState<BountySubmission[]>([])
   const [allSubmissions, setAllSubmissions] = useState<BountySubmission[]>([])
   const [loadingSubmissions, setLoadingSubmissions] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'bounties' | 'submissions'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'bounties' | 'submissions'>(() => {
+    const tab = searchParams.get('tab')
+    return (tab === 'overview' || tab === 'bounties' || tab === 'submissions') ? tab : 'overview'
+  })
   const [selectedSubmission, setSelectedSubmission] = useState<BountySubmission | null>(null)
   const [showSubmissionDetails, setShowSubmissionDetails] = useState(false)
   const [feedback, setFeedback] = useState('')
@@ -51,33 +55,68 @@ export default function SponsorDashboard() {
   // );
 
 
-  // Fetch sponsor data
+  // Handle tab changes and sync with URL
+  const handleTabChange = (newTab: 'overview' | 'bounties' | 'submissions') => {
+    setActiveTab(newTab)
+    const newSearchParams = new URLSearchParams(searchParams)
+    newSearchParams.set('tab', newTab)
+    setSearchParams(newSearchParams, { replace: true })
+  }
+
+  // Sync tab state with URL changes (e.g., browser back/forward)
   useEffect(() => {
-    const fetchSponsorData = async () => {
-      try {
-        setLoading(true)
-        if (!user?.id) return
+    const tab = searchParams.get('tab')
+    const validTab = (tab === 'overview' || tab === 'bounties' || tab === 'submissions') ? tab : 'overview'
+    if (validTab !== activeTab) {
+      setActiveTab(validTab)
+    }
+  }, [searchParams, activeTab])
 
-        // Fetch sponsor profile
-        const { data: sponsorData, error: sponsorError } = await supabase
-          .from('sponsors')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
+  // Cleanup function to reset state when component unmounts or user changes
+  useEffect(() => {
+    return () => {
+      setSponsor(null)
+      setBounties([])
+      setSelectedBounty(null)
+      setSubmissions([])
+      setAllSubmissions([])
+      setLoading(true)
+    }
+  }, [user?.id])
 
-        if (sponsorError) throw sponsorError
-        const sponsor = sponsorData as unknown as Sponsor
-        setSponsor(sponsor)
+  // Memoized fetch function for sponsor data
+  const fetchSponsorData = useCallback(async () => {
+    try {
+      setLoading(true)
+      if (!user?.id) return
 
-        // Fetch bounties
-        const { data: bountiesData, error: bountiesError } = await supabase
-          .from('bounties')
-          .select('*')
-          .eq('sponsor_id', sponsor.id)
-          .order('created_at', { ascending: false })
+      // Reset state before fetching
+      setSponsor(null)
+      setBounties([])
+      setSelectedBounty(null)
+      setSubmissions([])
+      setAllSubmissions([])
 
-        if (bountiesError) throw bountiesError
-        setBounties((bountiesData || []) as unknown as Bounty[])
+      // Fetch sponsor profile
+      const { data: sponsorData, error: sponsorError } = await supabase
+        .from('sponsors')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+
+      if (sponsorError) throw sponsorError
+      const sponsor = sponsorData as unknown as Sponsor
+      setSponsor(sponsor)
+
+      // Fetch bounties
+      const { data: bountiesData, error: bountiesError } = await supabase
+        .from('bounties')
+        .select('*')
+        .eq('sponsor_id', sponsor.id)
+        .order('created_at', { ascending: false })
+
+      if (bountiesError) throw bountiesError
+      setBounties((bountiesData || []) as unknown as Bounty[])
 
         // Fetch all submissions for this sponsor
         try {
@@ -102,13 +141,37 @@ export default function SponsorDashboard() {
       } catch (error) {
         console.error('Error fetching sponsor data:', error)
         toast.error('Failed to load sponsor data')
+        // Reset state on error
+        setSponsor(null)
+        setBounties([])
+        setAllSubmissions([])
       } finally {
         setLoading(false)
       }
+    }, [user?.id])
+
+  // Fetch sponsor data
+  useEffect(() => {
+    fetchSponsorData()
+  }, [fetchSponsorData])
+
+  // Refetch data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refetch data when the page becomes visible again
+      if (!document.hidden && user?.id) {
+        fetchSponsorData()
+      }
     }
 
-    fetchSponsorData()
-  }, [user])
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
+  }, [fetchSponsorData])
 
   // Fetch submissions for a specific bounty
   const fetchSubmissions = async (bountyId: string) => {
@@ -164,7 +227,7 @@ export default function SponsorDashboard() {
       setSubmissions(bountySubmissions)
     }
     
-    setActiveTab('submissions')
+    handleTabChange('submissions')
   }
 
   // Handle submission status update with transaction hash
@@ -566,7 +629,7 @@ export default function SponsorDashboard() {
         </div>
 
         {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <Tabs value={activeTab} onValueChange={(v) => handleTabChange(v as typeof activeTab)}>
           <TabsList className="bg-white dark:bg-gray-800 border-b border-sponsor-primary/20 dark:border-gray-600 w-full justify-start rounded-none p-0 h-auto shadow-sm">
             <TabsTrigger
               value="overview"

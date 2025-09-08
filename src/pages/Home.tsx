@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '../contexts/UserContext'
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar"
@@ -27,57 +27,88 @@ export default function Home() {
   const [selectedStatus, setSelectedStatus] = useState<Status>('open')
 
 
-  // Fetch bounties
+  // Cleanup function to reset state when component unmounts
   useEffect(() => {
-    const fetchBounties = async () => {
-      try {
-        console.log('Home: Fetching bounties for status:', selectedStatus)
-        setLoading(true)
-        const { data, error } = await supabase
-          .from('bounties')
-          .select(`
-            *,
-            sponsor:sponsors(*)
-          `)
-          .eq('status', selectedStatus)
-          // .eq('id', id)
-          .order('created_at', { ascending: false })
+    return () => {
+      setBounties([])
+      setLoading(true)
+    }
+  }, [])
 
+  // Memoized fetch function for bounties
+  const fetchBounties = useCallback(async () => {
+    try {
+      console.log('Home: Fetching bounties for status:', selectedStatus)
+      setLoading(true)
+      
+      // Reset state before fetching
+      setBounties([])
+      
+      const { data, error } = await supabase
+        .from('bounties')
+        .select(`
+          *,
+          sponsor:sponsors(*)
+        `)
+        .eq('status', selectedStatus)
+        .order('created_at', { ascending: false })
 
-        if (error) throw error
+      if (error) throw error
 
-        console.log('Home: Raw bounties data:', data)
-        console.log('Home: Number of bounties found:', data?.length || 0)
+      console.log('Home: Raw bounties data:', data)
+      console.log('Home: Number of bounties found:', data?.length || 0)
 
-        const updatedBounties = await Promise.all(data.map(async (bounty) => {
-          if (bounty.status !== 'completed' && new Date(bounty.end_date) < new Date()) {
-            const { error: updateError } = await supabase
-              .from('bounties')
-              .update({ status: 'completed' })
-              .eq('id', bounty.id)
+      const updatedBounties = await Promise.all(data.map(async (bounty) => {
+        if (bounty.status !== 'completed' && new Date(bounty.end_date) < new Date()) {
+          const { error: updateError } = await supabase
+            .from('bounties')
+            .update({ status: 'completed' })
+            .eq('id', bounty.id)
 
-            if (updateError) {
-              console.error('Error updating bounty status:', updateError)
-              return bounty
-            }
-
-            return { ...bounty, status: 'completed' }
+          if (updateError) {
+            console.error('Error updating bounty status:', updateError)
+            return bounty
           }
 
-          return bounty
-        }))
-
-        console.log('Home: Final bounties to set:', updatedBounties)
-        setBounties(updatedBounties)
-        } catch (error) {
-          console.error('Home: Error fetching bounties:', error)
-          toast.error('Failed to load bounties')
-        } finally {
-          setLoading(false)
+          return { ...bounty, status: 'completed' }
         }
+
+        return bounty
+      }))
+
+      console.log('Home: Final bounties to set:', updatedBounties)
+      setBounties(updatedBounties)
+    } catch (error) {
+      console.error('Home: Error fetching bounties:', error)
+      toast.error('Failed to load bounties')
+      setBounties([]) // Reset on error
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedStatus, setLoading])
+  
+  // Fetch bounties
+  useEffect(() => {
+    fetchBounties()
+  }, [fetchBounties])
+
+  // Refetch data when navigating back to this page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refetch data when the page becomes visible again
+      if (!document.hidden) {
+        fetchBounties()
       }
-      
-      fetchBounties()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
+  }, [fetchBounties])
     
       // Add debug function to test bounty fetching
       ;(window as any).testBountyFetch = fetchBounties
