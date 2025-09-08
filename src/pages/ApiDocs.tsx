@@ -1,6 +1,6 @@
 import React from 'react'
-import SwaggerUI from 'swagger-ui-react'
-import 'swagger-ui-react/swagger-ui.css'
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import { Badge } from "../components/ui/badge"
 
 // Import the swagger specification
 const swaggerSpec = {
@@ -490,30 +490,80 @@ const ApiDocs: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-3xl font-bold text-theme-primary mb-4">
           API Documentation
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-lg text-theme-secondary mb-4">
           Complete API documentation for the Contribium bounty platform
         </p>
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            Authentication Required
-          </h3>
-          <p className="text-blue-800 dark:text-blue-200 mb-3">
-            All API endpoints require an API key. To test the API:
-          </p>
-          <ol className="list-decimal list-inside text-blue-800 dark:text-blue-200 space-y-1">
-            <li>Click the <strong>"Authorize"</strong> button below</li>
-            <li>Enter your Supabase API key in the <strong>"ApiKeyAuth"</strong> field</li>
-            <li>For authenticated endpoints, also add your JWT token in <strong>"BearerAuth"</strong></li>
-            <li>Click <strong>"Try it out"</strong> on any endpoint to test</li>
-          </ol>
-        </div>
+        <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              API Base URL
+            </h3>
+            <p className="text-blue-800 dark:text-blue-200 mb-3">
+              <code className="bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">
+                https://wawxluhjdnqewiaexvvk.supabase.co/rest/v1/
+              </code>
+            </p>
+            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              Authentication Required
+            </h3>
+            <p className="text-blue-800 dark:text-blue-200">
+              All API endpoints require the Supabase API key in the <code>apikey</code> header.
+            </p>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-        <SwaggerUI spec={swaggerSpec} />
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge className="bg-green-100 text-green-800">GET</Badge>
+              /bounties
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-theme-secondary">List all bounties with optional filtering</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge className="bg-blue-100 text-blue-800">POST</Badge>
+              /bounties
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-theme-secondary">Create a new bounty (requires authentication)</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge className="bg-green-100 text-green-800">GET</Badge>
+              /bounty_submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-theme-secondary">List bounty submissions for a specific bounty</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Badge className="bg-blue-100 text-blue-800">POST</Badge>
+              /bounty_submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-theme-secondary">Submit a solution to a bounty (requires authentication)</p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

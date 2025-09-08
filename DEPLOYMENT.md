@@ -32,9 +32,10 @@ git push origin main
 #### Build Settings:
 - **Project name**: `contribium`
 - **Production branch**: `main`
-- **Build command**: `npm run build`
+- **Build command**: `npm install --legacy-peer-deps && npm run build:pages`
 - **Build output directory**: `dist`
 - **Root directory**: `/` (leave empty if repo root)
+- **Node.js version**: `22` (will use .nvmrc file)
 
 ### Step 3: Environment Variables
 
@@ -44,7 +45,6 @@ In your Cloudflare Pages project settings, add these environment variables:
 VITE_SUPABASE_URL=https://wawxluhjdnqewiaexvvk.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indhd3hsdWhqZG5xZXdpYWV4dnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4Mjk5MzYsImV4cCI6MjA1MTQwNTkzNn0.4mZkZ6HtPL52HSS8IgyJ_HU6N1G8Mu5BBmlTCpHlTGo
 VITE_APP_URL=https://contribium.alephium.org
-NODE_ENV=production
 ```
 
 ### Step 4: Configure Custom Domain
