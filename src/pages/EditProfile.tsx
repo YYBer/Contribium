@@ -19,9 +19,7 @@ import {
 } from '../components/ui/select'
 import { Badge } from '../components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
-import { Checkbox } from '../components/ui/checkbox'
 import { useToast } from '../components/ui/use-toast'
-import { useTheme } from '../contexts/ThemeContext'
 import { Web3Interest, WorkExperience } from '../types/supabase'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -56,106 +54,7 @@ interface FormErrors {
 
 interface SelectedSkills extends Record<SkillCategory, string[]> {}
 
-const COUNTRIES = [
-  // Europe
-  { value: 'albania', label: 'Albania' },
-  { value: 'andorra', label: 'Andorra' },
-  { value: 'austria', label: 'Austria' },
-  { value: 'belgium', label: 'Belgium' },
-  { value: 'bulgaria', label: 'Bulgaria' },
-  { value: 'croatia', label: 'Croatia' },
-  { value: 'cyprus', label: 'Cyprus' },
-  { value: 'czech-republic', label: 'Czech Republic' },
-  { value: 'denmark', label: 'Denmark' },
-  { value: 'estonia', label: 'Estonia' },
-  { value: 'finland', label: 'Finland' },
-  { value: 'france', label: 'France' },
-  { value: 'germany', label: 'Germany' },
-  { value: 'greece', label: 'Greece' },
-  { value: 'hungary', label: 'Hungary' },
-  { value: 'iceland', label: 'Iceland' },
-  { value: 'ireland', label: 'Ireland' },
-  { value: 'italy', label: 'Italy' },
-  { value: 'latvia', label: 'Latvia' },
-  { value: 'liechtenstein', label: 'Liechtenstein' },
-  { value: 'lithuania', label: 'Lithuania' },
-  { value: 'luxembourg', label: 'Luxembourg' },
-  { value: 'malta', label: 'Malta' },
-  { value: 'monaco', label: 'Monaco' },
-  { value: 'netherlands', label: 'Netherlands' },
-  { value: 'norway', label: 'Norway' },
-  { value: 'poland', label: 'Poland' },
-  { value: 'portugal', label: 'Portugal' },
-  { value: 'romania', label: 'Romania' },
-  { value: 'slovakia', label: 'Slovakia' },
-  { value: 'slovenia', label: 'Slovenia' },
-  { value: 'spain', label: 'Spain' },
-  { value: 'sweden', label: 'Sweden' },
-  { value: 'switzerland', label: 'Switzerland' },
-  { value: 'united-kingdom', label: 'United Kingdom' },
-
-  // Asia
-  { value: 'afghanistan', label: 'Afghanistan' },
-  { value: 'bangladesh', label: 'Bangladesh' },
-  { value: 'bhutan', label: 'Bhutan' },
-  { value: 'brunei', label: 'Brunei' },
-  { value: 'cambodia', label: 'Cambodia' },
-  { value: 'china', label: 'China' },
-  { value: 'india', label: 'India' },
-  { value: 'indonesia', label: 'Indonesia' },
-  { value: 'japan', label: 'Japan' },
-  { value: 'kazakhstan', label: 'Kazakhstan' },
-  { value: 'korea-north', label: 'Korea, North' },
-  { value: 'korea-south', label: 'Korea, South' },
-  { value: 'kyrgyzstan', label: 'Kyrgyzstan' },
-  { value: 'laos', label: 'Laos' },
-  { value: 'malaysia', label: 'Malaysia' },
-  { value: 'maldives', label: 'Maldives' },
-  { value: 'mongolia', label: 'Mongolia' },
-  { value: 'myanmar', label: 'Myanmar' },
-  { value: 'nepal', label: 'Nepal' },
-  { value: 'pakistan', label: 'Pakistan' },
-  { value: 'philippines', label: 'Philippines' },
-  { value: 'singapore', label: 'Singapore' },
-  { value: 'sri-lanka', label: 'Sri Lanka' },
-  { value: 'taiwan', label: 'Taiwan' },
-  { value: 'tajikistan', label: 'Tajikistan' },
-  { value: 'thailand', label: 'Thailand' },
-  { value: 'timor-leste', label: 'Timor-Leste' },
-  { value: 'turkmenistan', label: 'Turkmenistan' },
-  { value: 'uzbekistan', label: 'Uzbekistan' },
-  { value: 'vietnam', label: 'Vietnam' },
-
-  // North America
-  { value: 'canada', label: 'Canada' },
-  { value: 'mexico', label: 'Mexico' },
-  { value: 'united-states', label: 'United States' },
-  { value: 'costa-rica', label: 'Costa Rica' },
-  { value: 'cuba', label: 'Cuba' },
-  { value: 'dominican-republic', label: 'Dominican Republic' },
-  { value: 'el-salvador', label: 'El Salvador' },
-  { value: 'guatemala', label: 'Guatemala' },
-  { value: 'haiti', label: 'Haiti' },
-  { value: 'honduras', label: 'Honduras' },
-  { value: 'jamaica', label: 'Jamaica' },
-  { value: 'nicaragua', label: 'Nicaragua' },
-  { value: 'panama', label: 'Panama' },
-  { value: 'trinidad-and-tobago', label: 'Trinidad and Tobago' },
-
-  // South America
-  { value: 'argentina', label: 'Argentina' },
-  { value: 'bolivia', label: 'Bolivia' },
-  { value: 'brazil', label: 'Brazil' },
-  { value: 'chile', label: 'Chile' },
-  { value: 'colombia', label: 'Colombia' },
-  { value: 'ecuador', label: 'Ecuador' },
-  { value: 'guyana', label: 'Guyana' },
-  { value: 'paraguay', label: 'Paraguay' },
-  { value: 'peru', label: 'Peru' },
-  { value: 'suriname', label: 'Suriname' },
-  { value: 'uruguay', label: 'Uruguay' },
-  { value: 'venezuela', label: 'Venezuela' }
-];
+// Removed unused COUNTRIES constant - using getAllCountries() from constants/countries instead
 
 const WEB3_INTERESTS = [
   { value: 'defi' as Web3Interest, label: 'DeFi' },
@@ -166,7 +65,6 @@ const WEB3_INTERESTS = [
 
 export const EditProfile = () => {
   const navigate = useNavigate()
-  const { theme } = useTheme()
   const { toast } = useToast()
   const { user, refreshUser } = useUser()
   const [isLoading, setIsLoading] = useState(false)
@@ -229,6 +127,23 @@ export const EditProfile = () => {
     }
   }, [user])
 
+  // Safety net: Reset loading state if it's been loading too long
+  useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        console.warn('Profile update taking too long, resetting loading state')
+        setIsLoading(false)
+        toast({
+          title: "Warning",
+          description: "Profile update is taking longer than expected. Please try again.",
+          variant: "destructive"
+        })
+      }, 60000) // 60 second timeout
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [isLoading, toast])
+
   const validateField = (name: string, value: string): string => {
     switch (name) {
       case 'username':
@@ -261,49 +176,72 @@ export const EditProfile = () => {
     }))
   }
 
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "File size must be less than 5MB",
-          variant: "destructive"
-        })
-        return
-      }
-      setAvatarFile(file)
-      setAvatarPreview(URL.createObjectURL(file))
-    }
-  }
+  // Removed handleFileChange as it's replaced by the dropzone functionality
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!user?.id) return
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "User not found. Please refresh and try again.",
+        variant: "destructive"
+      })
+      return
+    }
   
+    console.log('Starting profile update process...')
     setIsLoading(true)
   
     try {
+      console.log('Form data being submitted:', formData)
+      console.log('Selected skills:', selectedSkills)
+      
       // Check username availability if it changed
       if (formData.username !== user.username) {
-        const isAvailable = await UserService.isUsernameAvailable(formData.username)
-        if (!isAvailable) {
+        console.log('Checking username availability for:', formData.username)
+        try {
+          const isAvailable = await UserService.isUsernameAvailable(formData.username)
+          console.log('Username availability result:', isAvailable)
+          if (!isAvailable) {
+            toast({
+              title: "Error",
+              description: "Username is already taken",
+              variant: "destructive"
+            })
+            setIsLoading(false)
+            return
+          }
+        } catch (error) {
+          console.error('Error checking username availability:', error)
           toast({
             title: "Error",
-            description: "Username is already taken",
+            description: "Failed to check username availability. Please try again.",
             variant: "destructive"
           })
-          setIsLoading(false) // Important: Reset loading state
+          setIsLoading(false)
           return
         }
       }
 
       if (formData.walletAddress !== user.wallet_address) {
-        const isAvailable = await UserService.isWalletAddressAvailable(formData.walletAddress, user.id)
-        if (!isAvailable) {
+        console.log('Checking wallet address availability for:', formData.walletAddress)
+        try {
+          const isAvailable = await UserService.isWalletAddressAvailable(formData.walletAddress, user.id)
+          console.log('Wallet address availability result:', isAvailable)
+          if (!isAvailable) {
+            toast({
+              title: "Error",
+              description: "Wallet address is already registered",
+              variant: "destructive"
+            })
+            setIsLoading(false)
+            return
+          }
+        } catch (error) {
+          console.error('Error checking wallet address availability:', error)
           toast({
             title: "Error",
-            description: "Wallet address is already registered",
+            description: "Failed to check wallet address availability. Please try again.",
             variant: "destructive"
           })
           setIsLoading(false)
@@ -322,10 +260,16 @@ export const EditProfile = () => {
       }
   
       // Validate required fields before update
-      if (!formData.username.trim() || !formData.firstName.trim() || !formData.lastName.trim() || !formData.walletAddress.trim()) {
+      if (!formData.username?.trim() || !formData.firstName?.trim() || !formData.lastName?.trim() || !formData.walletAddress?.trim()) {
+        console.log('Validation failed - missing required fields:', {
+          username: formData.username?.trim(),
+          firstName: formData.firstName?.trim(),
+          lastName: formData.lastName?.trim(),
+          walletAddress: formData.walletAddress?.trim()
+        })
         toast({
           title: "Error",
-          description: "Please fill in all required fields",
+          description: "Please fill in all required fields (Username, First Name, Last Name, Wallet Address)",
           variant: "destructive"
         })
         setIsLoading(false)
@@ -333,32 +277,47 @@ export const EditProfile = () => {
       }
   
       const updates: Partial<User> = {
-        username: formData.username,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        bio: formData.bio,
-        wallet_address: formData.walletAddress,
-        github_url: formData.githubUrl,
-        twitter_url: formData.twitterUrl,
-        linkedin_url: formData.linkedinUrl,
-        telegram_url: formData.telegramUrl,
-        website_url: formData.websiteUrl,
-        current_employer: formData.currentEmployer,
-        web3_interests: formData.web3Interests,
+        username: formData.username?.trim(),
+        first_name: formData.firstName?.trim(),
+        last_name: formData.lastName?.trim(),
+        bio: formData.bio?.trim() || null,
+        wallet_address: formData.walletAddress?.trim(),
+        github_url: formData.githubUrl?.trim() || null,
+        twitter_url: formData.twitterUrl?.trim() || null,
+        linkedin_url: formData.linkedinUrl?.trim() || null,
+        telegram_url: formData.telegramUrl?.trim() || null,
+        website_url: formData.websiteUrl?.trim() || null,
+        current_employer: formData.currentEmployer?.trim() || null,
+        web3_interests: formData.web3Interests || [],
         work_experience: formData.workExperience,
-        location: formData.location,
-        frontend_skills: selectedSkills.frontend,
-        backend_skills: selectedSkills.backend,
-        blockchain_skills: selectedSkills.blockchain,
-        design_skills: selectedSkills.design,
-        content_skills: selectedSkills.content,
+        location: formData.location || null,
+        frontend_skills: selectedSkills.frontend || [],
+        backend_skills: selectedSkills.backend || [],
+        blockchain_skills: selectedSkills.blockchain || [],
+        design_skills: selectedSkills.design || [],
+        content_skills: selectedSkills.content || [],
         avatar_url: avatarUrl || undefined,
         updated_at: new Date().toISOString()
       }
+      
+      // Remove empty/null values to avoid issues
+      Object.keys(updates).forEach(key => {
+        const typedKey = key as keyof Partial<User>
+        const value = updates[typedKey]
+        if (value === '' || value === null || value === undefined) {
+          delete updates[typedKey]
+        }
+      })
   
       console.log('Updating profile with:', updates)
   
-      const updatedUser = await UserService.updateProfile(user.id, updates)
+      // Add timeout to prevent infinite hanging
+      const updatePromise = UserService.updateProfile(user.id, updates)
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Profile update timeout - please try again')), 30000) // 30 second timeout
+      })
+      
+      const updatedUser = await Promise.race([updatePromise, timeoutPromise]) as User
       console.log('Update response:', updatedUser)
       
       if (!updatedUser) {
@@ -366,8 +325,18 @@ export const EditProfile = () => {
       }
   
       console.log('Refreshing user context...')
-      await refreshUser()
-      console.log('User context refreshed successfully')
+      try {
+        await refreshUser()
+        console.log('User context refreshed successfully')
+      } catch (refreshError) {
+        console.error('Error refreshing user context:', refreshError)
+        // Don't fail the whole operation if refresh fails
+        toast({
+          title: "Warning",
+          description: "Profile updated but failed to refresh data. Please refresh the page.",
+          variant: "destructive"
+        })
+      }
       
       toast({
         title: "Success",
@@ -376,7 +345,8 @@ export const EditProfile = () => {
   
       // Navigate to the updated profile
       setTimeout(() => {
-        navigate(`/profile/${updatedUser.username}`)
+        console.log('Navigating to profile:', updatedUser.username || formData.username)
+        navigate(`/profile/${updatedUser.username || formData.username}`)
       }, 1000) // Small delay to ensure toast is seen
   
     } catch (error) {
@@ -396,6 +366,7 @@ export const EditProfile = () => {
         variant: "destructive"
       })
     } finally {
+      console.log('Profile update process completed')
       setIsLoading(false)
     }
   }
