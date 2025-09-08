@@ -187,13 +187,36 @@ export default function BountyDetails() {
     
     try {
       const now = new Date()
-      const deadline = new Date(bounty.end_date)
+      
+      // Handle different date formats more robustly
+      let deadline: Date
+      if (typeof bounty.end_date === 'string') {
+        // If it's an ISO string, parse it directly
+        if (bounty.end_date.includes('T')) {
+          deadline = new Date(bounty.end_date)
+        } else {
+          // If it's just a date string (YYYY-MM-DD), treat it as end of day in local timezone
+          deadline = new Date(bounty.end_date + 'T23:59:59.999')
+        }
+      } else {
+        deadline = new Date(bounty.end_date)
+      }
+      
+      console.log('Debug time calculation:', {
+        now: now.toISOString(),
+        endDate: bounty.end_date,
+        deadline: deadline.toISOString(),
+        isValidDate: !isNaN(deadline.getTime())
+      })
       
       if (isNaN(deadline.getTime())) {
+        console.error('Invalid deadline date:', bounty.end_date)
         return "Invalid date"
       }
       
       const diff = deadline.getTime() - now.getTime()
+      
+      console.log('Time difference (ms):', diff)
       
       if (diff < 0) {
         return "Expired"
@@ -203,9 +226,15 @@ export default function BountyDetails() {
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
       
-      return `${days}d:${hours}h:${minutes}m`
+      if (days > 0) {
+        return `${days}d:${hours}h:${minutes}m`
+      } else if (hours > 0) {
+        return `${hours}h:${minutes}m`
+      } else {
+        return `${minutes}m`
+      }
     } catch (error) {
-      console.error('Error calculating time remaining:', error)
+      console.error('Error calculating time remaining:', error, 'End date:', bounty.end_date)
       return "Error"
     }
   }
