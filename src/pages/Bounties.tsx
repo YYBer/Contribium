@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -30,17 +30,27 @@ export function Bounties() {
       // Clear existing bounties before fetching
       setBounties([])
       
+      // Fetch all bounties and calculate their real-time status
       const { data, error } = await supabase
         .from('bounties')
         .select(`
           *,
           sponsor:sponsors(id, name, is_verified)
         `)
-        .eq('status', selectedStatus)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setBounties(data || [])
+      
+      // Calculate real-time status for each bounty and filter
+      const currentTime = new Date()
+      const filteredBounties = (data || []).filter((bounty) => {
+        const dueDate = new Date(bounty.end_date as string)
+        const calculatedStatus = dueDate >= currentTime ? 'open' : 'completed'
+        
+        return calculatedStatus === selectedStatus
+      })
+      
+      setBounties(filteredBounties || [])
     } catch (error) {
       console.error('Error fetching bounties:', error)
       toast.error('Failed to load bounties')
@@ -89,7 +99,13 @@ export function Bounties() {
   const getTimeRemaining = (dueDate: string) => {
     const remaining = new Date(dueDate).getTime() - new Date().getTime()
     const days = Math.floor(remaining / (1000 * 60 * 60 * 24))
-    return `${days}d`
+    
+    if (selectedStatus === 'completed' || remaining < 0) {
+      const expiredDays = Math.abs(days)
+      return expiredDays === 0 ? 'Today' : `${expiredDays}d ago`
+    }
+    
+    return days === 0 ? 'Today' : `${days}d`
   }
 
   return (
@@ -174,7 +190,12 @@ export function Bounties() {
                               <Ship className="text-theme-primary" />
                             </div>
                             <div>
-                              <h3 className="font-medium text-theme-primary">{bounty.title}</h3>
+                              <h3 
+                                className="font-medium text-theme-primary hover:underline cursor-pointer transition-all"
+                                onClick={() => navigate(`/bounty/${bounty.id}`)}
+                              >
+                                {bounty.title}
+                              </h3>
                               {bounty.sponsor?.id ? (
                                     <Link to={`/sponsor/${bounty.sponsor.id}`}>
                                       <div className="flex items-center gap-1 text-sm text-theme-secondary">
@@ -202,7 +223,7 @@ export function Bounties() {
                                   <MapPin className="w-4 h-4" />
                                   <span>{bounty.category}</span>
                                 </div>
-                                <span>Due in {getTimeRemaining(bounty.end_date)}</span>
+                                <span>{selectedStatus === 'completed' ? 'Expired' : 'Due in'} {getTimeRemaining(bounty.end_date)}</span>
                                 {bounty.current_submissions > 0 && (
                                   <div className="flex items-center gap-1">
                                     <MessageSquare className="w-4 h-4" />

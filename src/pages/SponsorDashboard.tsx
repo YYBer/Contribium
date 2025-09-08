@@ -116,7 +116,20 @@ export default function SponsorDashboard() {
         .order('created_at', { ascending: false })
 
       if (bountiesError) throw bountiesError
-      setBounties((bountiesData || []) as unknown as Bounty[])
+      
+      // Update bounties with real-time status calculation
+      const currentTime = new Date()
+      const bountiesWithStatus = (bountiesData || []).map((bounty) => {
+        const dueDate = new Date(bounty.end_date as string)
+        const calculatedStatus = dueDate >= currentTime ? 'open' : 'completed'
+        
+        return {
+          ...bounty,
+          status: calculatedStatus // Update status based on real-time calculation
+        }
+      })
+      
+      setBounties(bountiesWithStatus as unknown as Bounty[])
 
         // Fetch all submissions for this sponsor
         try {

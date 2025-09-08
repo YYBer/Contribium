@@ -44,13 +44,13 @@ export default function Home() {
       // Reset state before fetching
       setBounties([])
       
+      // Fetch all bounties and calculate their real-time status
       const { data, error } = await supabase
         .from('bounties')
         .select(`
           *,
           sponsor:sponsors(*)
         `)
-        .eq('status', selectedStatus)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -58,26 +58,17 @@ export default function Home() {
       console.log('Home: Raw bounties data:', data)
       console.log('Home: Number of bounties found:', data?.length || 0)
 
-      const updatedBounties = await Promise.all(data.map(async (bounty) => {
-        if (bounty.status !== 'completed' && new Date(bounty.end_date) < new Date()) {
-          const { error: updateError } = await supabase
-            .from('bounties')
-            .update({ status: 'completed' })
-            .eq('id', bounty.id)
+      // Calculate real-time status for each bounty and filter
+      const currentTime = new Date()
+      const filteredBounties = data.filter((bounty) => {
+        const dueDate = new Date(bounty.end_date as string)
+        const calculatedStatus = dueDate >= currentTime ? 'open' : 'completed'
+        
+        return calculatedStatus === selectedStatus
+      })
 
-          if (updateError) {
-            console.error('Error updating bounty status:', updateError)
-            return bounty
-          }
-
-          return { ...bounty, status: 'completed' }
-        }
-
-        return bounty
-      }))
-
-      console.log('Home: Final bounties to set:', updatedBounties)
-      setBounties(updatedBounties)
+      console.log('Home: Filtered bounties:', filteredBounties)
+      setBounties(filteredBounties as Bounty[])
     } catch (error) {
       console.error('Home: Error fetching bounties:', error)
       toast.error('Failed to load bounties')
@@ -127,11 +118,17 @@ export default function Home() {
     return bounty.category.toLowerCase() === selectedCategory.toLowerCase()
   })
 
-  // Calculate time remaining
+  // Calculate time remaining or expired
   const getTimeRemaining = (dueDate: string) => {
     const remaining = new Date(dueDate).getTime() - new Date().getTime()
     const days = Math.floor(remaining / (1000 * 60 * 60 * 24))
-    return `${days}d`
+    
+    if (selectedStatus === 'completed' || remaining < 0) {
+      const expiredDays = Math.abs(days)
+      return expiredDays === 0 ? 'Today' : `${expiredDays}d ago`
+    }
+    
+    return days === 0 ? 'Today' : `${days}d`
   }
 
   return (
@@ -219,7 +216,12 @@ export default function Home() {
                                 <Ship className="text-theme-primary" />
                               </div>
                               <div>
-                                <h3 className={`font-medium text-theme-primary`}>{bounty.title}</h3>
+                                <h3 
+                                  className={`font-medium text-theme-primary hover:underline cursor-pointer transition-all`}
+                                  onClick={() => navigate(`/bounty/${bounty.id}`)}
+                                >
+                                  {bounty.title}
+                                </h3>
                                   {bounty.sponsor?.id ? (
                                     <Link to={`/sponsor/${bounty.sponsor.id}`}>
                                       <div className={`flex items-center gap-1 text-sm text-theme-primary`}>
@@ -248,7 +250,7 @@ export default function Home() {
                                     <MapPin className="w-4 h-4" />
                                     <span>{bounty.category}</span>
                                   </div>
-                                  <span>Due in {getTimeRemaining(bounty.end_date)}</span>
+                                  <span>{selectedStatus === 'completed' ? 'Expired' : 'Due in'} {getTimeRemaining(bounty.end_date)}</span>
                                   {bounty.current_submissions > 0 && (
                                     <div className="flex items-center gap-1">
                                       <MessageSquare className="w-4 h-4" />

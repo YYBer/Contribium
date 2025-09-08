@@ -132,7 +132,7 @@ export function CreateSponsorProfile() {
     }))
 
     setPhotoFiles(prev => [...prev, ...newPhotos])
-  }, [photoFiles, toast])
+  }, [photoFiles.length])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -264,12 +264,6 @@ export function CreateSponsorProfile() {
       let profilePhotos: string[] = []
       console.log("Step 1: Starting photo upload process...")
       
-      // TEMPORARY: Skip all photo uploads to test if this is the hanging issue
-      console.log("Step 1: TEMPORARILY SKIPPING PHOTO UPLOADS FOR TESTING")
-      profilePhotos = []
-      
-      // Uncomment this block after storage bucket is properly set up:
-      /*
       if (photoFiles.length === 0) {
         console.log("Step 1: No photos selected, skipping upload")
         profilePhotos = []
@@ -286,7 +280,6 @@ export function CreateSponsorProfile() {
           profilePhotos = [] // Ensure it's empty array
         }
       }
-      */
       
       const sponsorData = {
         user_id: user.id,

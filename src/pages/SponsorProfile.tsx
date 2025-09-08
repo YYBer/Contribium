@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { ExternalLink, Twitter, Github, MessageSquare, Globe, CircleDollarSign, BarChart3 } from 'lucide-react'
+import { ExternalLink, MessageSquare, Globe, CircleDollarSign, BarChart3 } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
@@ -111,7 +111,13 @@ export default function SponsorProfile() {
   const getTimeRemaining = (dueDate: string) => {
     const remaining = new Date(dueDate).getTime() - new Date().getTime()
     const days = Math.floor(remaining / (1000 * 60 * 60 * 24))
-    return days > 0 ? `${days}d` : 'Ended'
+    
+    if (remaining < 0) {
+      const expiredDays = Math.abs(days)
+      return expiredDays === 0 ? 'Ended today' : `Ended ${expiredDays}d ago`
+    }
+    
+    return days === 0 ? 'Ends today' : `${days}d remaining`
   }
 
   if (loading) {
@@ -200,7 +206,7 @@ export default function SponsorProfile() {
                       className="btn-sponsor-outline-accent"
                       onClick={() => window.open(`https://x.com/${sponsor.twitter_handle}`, '_blank')}
                     >
-                      <Twitter className="w-4 h-4 mr-2" />
+                      <MessageSquare className="w-4 h-4 mr-2" />
                       Twitter
                     </Button>
                   )}
@@ -211,7 +217,7 @@ export default function SponsorProfile() {
                       className="btn-sponsor-outline-primary"
                       onClick={() => window.open(`https://github.com/${sponsor.github_handle}`, '_blank')}
                     >
-                      <Github className="w-4 h-4 mr-2" />
+                      <Globe className="w-4 h-4 mr-2" />
                       GitHub
                     </Button>
                   )}
