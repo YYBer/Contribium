@@ -11,7 +11,7 @@ export default function LoadingPage() {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-theme-primary font-sentient">
-            Contributium
+            Contribium
           </h1>
           <p className="text-xl text-theme-secondary">
             Loading your experience...

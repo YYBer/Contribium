@@ -26,6 +26,7 @@ import MySubmission from './pages/MySubmission'
 import SponsorProfile from './pages/SponsorProfile'
 import Leaderboard from './pages/Leaderboard'
 import ApiDocs from './pages/ApiDocs'
+import AuthCallback from './pages/AuthCallback'
 export default function App() {
   const [initialUser, setInitialUser] = useState<User | null>(null)
   const [initializing, setInitializing] = useState(true)
@@ -63,6 +64,7 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/sponsor" element={<OnboardingSteps />} />

@@ -44,11 +44,11 @@ export class UserService {
   }
 
   static async signInWithGoogle() {
-    const { origin } = window.location
+    const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin
     return supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: `${baseUrl}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -59,11 +59,11 @@ export class UserService {
   }
 
   static async signInWithGithub() {
-    const { origin } = window.location
+    const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin
     return supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: `${baseUrl}/auth/callback`,
         scopes: 'user:email',
       },
     })

@@ -1,0 +1,11 @@
+name = "contribium"
+main = "src/index.js"
+compatibility_date = "2024-01-15"
+
+[site]
+bucket = "./dist"
+
+[vars]
+VITE_SUPABASE_URL = "https://wawxluhjdnqewiaexvvk.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indhd3hsdWhqZG5xZXdpYWV4dnZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4Mjk5MzYsImV4cCI6MjA1MTQwNTkzNn0.4mZkZ6HtPL52HSS8IgyJ_HU6N1G8Mu5BBmlTCpHlTGo"
+VITE_APP_URL = "https://contribium.alephium.workers.dev"
