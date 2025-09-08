@@ -283,6 +283,58 @@ export default function Profile() {
                     {profileUser.full_name || profileUser.username}
                   </h1>
                   <p className="text-theme-muted">@{profileUser.username}</p>
+                  
+                  {/* Social Links */}
+                  <div className="flex gap-2 mt-3">
+                    {profileUser.twitter_url && (
+                      <a
+                        href={profileUser.twitter_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-theme-muted hover:text-theme-primary hover-theme"
+                      >
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Twitter className="w-4 h-4" />
+                        </Button>
+                      </a>
+                    )}
+                    {profileUser.linkedin_url && (
+                      <a
+                        href={profileUser.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-theme-muted hover:text-theme-primary hover-theme"
+                      >
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Linkedin className="w-4 h-4" />
+                        </Button>
+                      </a>
+                    )}
+                    {profileUser.github_url && (
+                      <a
+                        href={profileUser.github_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-theme-muted hover:text-theme-primary hover-theme"
+                      >
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Github className="w-4 h-4" />
+                        </Button>
+                      </a>
+                    )}
+                    {profileUser.website_url && (
+                      <a
+                        href={profileUser.website_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-theme-muted hover:text-theme-primary hover-theme"
+                      >
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Globe className="w-4 h-4" />
+                        </Button>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
@@ -483,66 +535,16 @@ export default function Profile() {
                     </p>
                     <p className={`text-sm text-theme-muted`}>Grant Completed</p>
                   </div>
-                  {isOwnProfile && (
-                    <Button 
-                      className="btn-theme-primary flex items-center gap-2"
-                      onClick={() => navigate('/mysubmission')}
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                      View My Submissions
-                    </Button>
-                  )}
                 </div>
-                <div className="flex gap-4">
-                  {profileUser.twitter_url && (
-                    <a
-                      href={profileUser.twitter_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-theme-muted hover:text-theme-primary hover-theme`}
-                    >
-                      <Button variant="ghost" size="icon">
-                        <Twitter className="w-5 h-5" />
-                      </Button>
-                    </a>
-                  )}
-                  {profileUser.linkedin_url && (
-                    <a
-                      href={profileUser.linkedin_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-theme-muted hover:text-theme-primary hover-theme`}
-                    >
-                      <Button variant="ghost" size="icon">
-                        <Linkedin className="w-5 h-5" />
-                      </Button>
-                    </a>
-                  )}
-                  {profileUser.github_url && (
-                    <a
-                      href={profileUser.github_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-theme-muted hover:text-theme-primary hover-theme`}
-                    >
-                      <Button variant="ghost" size="icon">
-                        <Github className="w-5 h-5" />
-                      </Button>
-                    </a>
-                  )}
-                  {profileUser.website_url && (
-                    <a
-                      href={profileUser.website_url || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-theme-muted hover:text-theme-primary hover-theme`}
-                    >
-                      <Button variant="ghost" size="icon">
-                        <Globe className="w-5 h-5" />
-                      </Button>
-                    </a>
-                  )}
-                </div>
+                {isOwnProfile && (
+                  <Button 
+                    className="btn-theme-primary flex items-center gap-2"
+                    onClick={() => navigate('/mysubmission')}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    View My Submissions
+                  </Button>
+                )}
               </div>
 
               <div className="space-y-6">

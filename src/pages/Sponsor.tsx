@@ -81,7 +81,7 @@ export default function OnboardingSteps() {
                   ))}
                 </ul>
                 
-                <Button className="btn-sponsor-primary w-full h-12 text-lg">
+                <Button className="btn-sponsor-primary w-full h-12 text-lg cursor-default">
                   Start a Bounty
                 </Button>
               </CardContent>
@@ -117,7 +117,7 @@ export default function OnboardingSteps() {
                   ))}
                 </ul>
                 
-                <Button className="btn-sponsor-accent w-full h-12 text-lg">
+                <Button className="btn-sponsor-accent w-full h-12 text-lg cursor-default">
                   Start a Project
                 </Button>
               </CardContent>
