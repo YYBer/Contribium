@@ -46,7 +46,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "dev": "vite",
+    "dev": "vite --port 3000",
     "build": "vite build",
     "preview": "vite preview",
     "test": "react-scripts test",
@@ -72,16 +72,20 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
+    "@testing-library/react": "^16.3.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@types/testing-library__react": "^10.2.0",
     "autoprefixer": "^10.4.20",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.49",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-react": "^5.27.0",
     "tailwindcss": "^3.4.17",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "nth-check": ">=2.0.1",

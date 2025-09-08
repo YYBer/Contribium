@@ -25,6 +25,7 @@ import OnboardingSteps from './pages/Sponsor'
 import MySubmission from './pages/MySubmission'
 import SponsorProfile from './pages/SponsorProfile'
 import Leaderboard from './pages/Leaderboard'
+import ApiDocs from './pages/ApiDocs'
 export default function App() {
   const [initialUser, setInitialUser] = useState<User | null>(null)
   const [initializing, setInitializing] = useState(true)
@@ -78,6 +79,7 @@ export default function App() {
               <Route path="/bounty/:id" element={<BountyDetail />} />
               <Route path="/editbounty" element={<EditBounty />} />
               <Route path="/editbounty/:id" element={<EditBounty />} />
+              <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

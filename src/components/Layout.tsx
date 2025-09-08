@@ -130,6 +130,12 @@ const Layout = () => {
                   {item}
                 </Link>
               ))}
+              <Link 
+                to="/api-docs"
+                className="text-sm font-medium text-theme-primary hover:opacity-80 transition-colors relative"
+              >
+                API Docs
+              </Link>
             </div>
           </div>
           

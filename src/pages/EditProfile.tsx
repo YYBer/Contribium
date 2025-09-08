@@ -157,7 +157,12 @@ const COUNTRIES = [
   { value: 'venezuela', label: 'Venezuela' }
 ];
 
-const WEB3_INTERESTS = ['DeFi', 'NFTs', 'DAOs', 'GameFi', 'Infrastructure'] as const
+const WEB3_INTERESTS = [
+  { value: 'defi' as Web3Interest, label: 'DeFi' },
+  { value: 'nft' as Web3Interest, label: 'NFTs' },
+  { value: 'dao' as Web3Interest, label: 'DAOs' },
+  { value: 'other' as Web3Interest, label: 'Other' }
+]
 
 export const EditProfile = () => {
   const navigate = useNavigate()
@@ -250,18 +255,10 @@ export const EditProfile = () => {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    if (name === 'web3Interests') {
-      const values = value.split(',').filter(Boolean) as Web3Interest[]
-      setFormData(prev => ({
-        ...prev,
-        [name]: values
-      }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }))
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -325,7 +322,7 @@ export const EditProfile = () => {
       }
   
       // Validate required fields before update
-      if (!formData.username || !formData.firstName || !formData.lastName || !formData.walletAddress) {
+      if (!formData.username.trim() || !formData.firstName.trim() || !formData.lastName.trim() || !formData.walletAddress.trim()) {
         toast({
           title: "Error",
           description: "Please fill in all required fields",
@@ -359,28 +356,43 @@ export const EditProfile = () => {
         updated_at: new Date().toISOString()
       }
   
-      console.log('Updating profile with:', updates) // Add logging
+      console.log('Updating profile with:', updates)
   
       const updatedUser = await UserService.updateProfile(user.id, updates)
+      console.log('Update response:', updatedUser)
+      
       if (!updatedUser) {
         throw new Error('Failed to update profile: No response from server')
       }
   
+      console.log('Refreshing user context...')
       await refreshUser()
+      console.log('User context refreshed successfully')
       
       toast({
         title: "Success",
         description: "Profile updated successfully"
       })
   
-      // Optional: Navigate away after successful update
-      navigate(`/profile/${updatedUser.username}`)
+      // Navigate to the updated profile
+      setTimeout(() => {
+        navigate(`/profile/${updatedUser.username}`)
+      }, 1000) // Small delay to ensure toast is seen
   
     } catch (error) {
       console.error('Error updating profile:', error)
+      
+      // Provide more specific error handling
+      let errorMessage = "Failed to update profile"
+      if (error instanceof Error) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      }
+      
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update profile",
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {
@@ -446,7 +458,7 @@ export const EditProfile = () => {
       const fileExt = avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const fileName = `${Date.now()}.${fileExt}`
       
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, avatarFile, {
           contentType: avatarFile.type,
@@ -477,16 +489,16 @@ export const EditProfile = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className={`min-h-screen bg-theme-primary w-full px-4`}>
+    <form onSubmit={handleSubmit} className="min-h-screen transition-theme bg-theme-primary w-full px-4">
       <div className="max-w-3xl mx-auto">
-        <Card className="card-theme">
+        <Card className="card-theme transition-theme">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-theme-primary font-sentient">Edit Profile</CardTitle>
+            <CardTitle className="text-2xl font-bold text-theme-primary font-sentient transition-theme">Edit Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* Personal Info */}
             <section className="space-y-6">
-              <h2 className="text-lg font-semibold text-theme-primary">PERSONAL INFO</h2>
+              <h2 className="text-lg font-semibold text-theme-primary transition-theme">PERSONAL INFO</h2>
               
               <div className="space-y-4">
                 <Label>Profile Picture</Label>
@@ -504,26 +516,23 @@ export const EditProfile = () => {
                       hover:border-theme-accent cursor-pointer`}
                   >
                     <input {...getInputProps()} />
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      className="btn-theme-secondary"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {isDragActive 
-                        ? 'Drop the image here'
-                        : 'Choose or drag and drop image'
-                      }
-                    </Button>
-                    <p className="text-sm text-theme-muted mt-2">
-                      Maximum size 5 MB - PNG, JPG, GIF
-                    </p>
-                    {avatarFile && (
-                      <p className="text-sm text-theme-primary mt-2">
-                        Selected: {avatarFile.name}
+                    <div className="space-y-2">
+                      <Upload className="w-8 h-8 mx-auto text-theme-muted" />
+                      <p className="text-theme-primary font-medium">
+                        {isDragActive 
+                          ? 'Drop the image here'
+                          : 'Click to choose or drag and drop image'
+                        }
                       </p>
-                    )}
+                      <p className="text-sm text-theme-muted">
+                        Maximum size 5 MB - PNG, JPG, GIF
+                      </p>
+                      {avatarFile && (
+                        <p className="text-sm text-theme-primary font-medium">
+                          Selected: {avatarFile.name}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -535,7 +544,8 @@ export const EditProfile = () => {
                     name="username"
                     value={formData.username}
                     onChange={handleInputChange}
-                    className={`input-theme ${errors.username ? 'border-red-500' : ''}`}
+                    className={`input-theme placeholder:text-theme-muted/50 ${errors.username ? 'border-red-500' : ''}`}
+                    placeholder="Enter your username"
                     required
                   />
                   {errors.username && (
@@ -552,7 +562,8 @@ export const EditProfile = () => {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      className={`input-theme ${errors.firstName ? 'border-red-500' : ''}`}
+                      className={`input-theme placeholder:text-theme-muted/50 ${errors.firstName ? 'border-red-500' : ''}`}
+                      placeholder="Enter your first name"
                       required
                     />
                     {errors.firstName && (
@@ -566,7 +577,8 @@ export const EditProfile = () => {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleInputChange}
-                      className={`input-theme ${errors.lastName ? 'border-red-500' : ''}`}
+                      className={`input-theme placeholder:text-theme-muted/50 ${errors.lastName ? 'border-red-500' : ''}`}
+                      placeholder="Enter your last name"
                       required
                     />
                     {errors.lastName && (
@@ -583,7 +595,8 @@ export const EditProfile = () => {
                     name="bio"
                     value={formData.bio}
                     onChange={handleInputChange}
-                    className="input-theme"
+                    className="input-theme placeholder:text-theme-muted/50"
+                    placeholder="Tell us about yourself in one line"
                   />
                 </div>
 
@@ -595,7 +608,8 @@ export const EditProfile = () => {
                     name="walletAddress"
                     value={formData.walletAddress}
                     onChange={handleInputChange}
-                    className={`input-theme ${errors.walletAddress ? 'border-red-500' : ''}`}
+                    className={`input-theme placeholder:text-theme-muted/50 ${errors.walletAddress ? 'border-red-500' : ''}`}
+                    placeholder="Enter your Alephium wallet address"
                     required
                   />
                   {errors.walletAddress && (
@@ -621,7 +635,7 @@ export const EditProfile = () => {
                             name={social.name}
                             value={social.value}
                             onChange={handleInputChange}
-                            className={`input-theme pl-10 ${errors[social.name] ? 'border-red-500' : ''}`}
+                            className={`input-theme placeholder:text-theme-muted/50 pl-10 ${errors[social.name] ? 'border-red-500' : ''}`}
                             placeholder={social.placeholder}
                           />
                         </div>
@@ -640,16 +654,31 @@ export const EditProfile = () => {
                     {/* Web3 Interests */}
                     <div>
                       <Label>What areas of Web3 are you most interested in?</Label>
-                      <Select value={formData.web3Interests.join(',')} onValueChange={(value) => handleSelectChange('web3Interests', value)}>
-                        <SelectTrigger className="input-theme">
-                          <SelectValue placeholder="Select areas" />
-                        </SelectTrigger>
-                        <SelectContent className="card-theme">
-                          {WEB3_INTERESTS.map((interest) => (
-                            <SelectItem key={interest} value={interest}>{interest}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {WEB3_INTERESTS.map((interest) => {
+                          const isSelected = formData.web3Interests.includes(interest.value)
+                          return (
+                            <Badge
+                              key={interest.value}
+                              variant="outline"
+                              className={`cursor-pointer border-theme-primary hover:border-theme-accent transition-theme
+                                ${isSelected ? 'bg-theme-accent text-theme-primary' : 'text-theme-muted'}`}
+                              onClick={() => {
+                                const currentInterests = formData.web3Interests
+                                const newInterests = isSelected
+                                  ? currentInterests.filter(i => i !== interest.value)
+                                  : [...currentInterests, interest.value]
+                                setFormData(prev => ({
+                                  ...prev,
+                                  web3Interests: newInterests
+                                }))
+                              }}
+                            >
+                              {interest.label}
+                            </Badge>
+                          )
+                        })}
+                      </div>
                     </div>
 
                     {/* Work Experience */}
@@ -691,7 +720,8 @@ export const EditProfile = () => {
                         name="currentEmployer"
                         value={formData.currentEmployer}
                         onChange={handleInputChange}
-                        className="input-theme"
+                        className="input-theme placeholder:text-theme-muted/50"
+                        placeholder="Enter your current employer"
                       />
                     </div>
 
